@@ -1,4 +1,5 @@
 <!-- badges: start -->
+[![rdav status badge](https://gk-crop.r-universe.dev/badges/rdav)](https://gk-crop.r-universe.dev/rdav)
 [![R-CMD-check](https://github.com/gk-crop/rdav/actions/workflows/r.yml/badge.svg)](https://github.com/gk-crop/rdav/actions/workflows/r.yml)
 <!-- badges: end -->
 # Simple package to interact with a webdav server
