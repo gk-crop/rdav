@@ -1,0 +1,19 @@
+Package: rdav
+Type: Package
+Title: Simple WebDAV Client
+Version: 0.0.1
+Author: Gunther Krauss
+Maintainer: Gunther Krauss <guntherkrauss@uni-bonn.de>
+Description: A simple WebDAV client that provides functions to fetch and send 
+  files or folders to a WebDAV server.
+License: GPL-2
+Imports:
+  httr2,
+  dplyr,
+  tidyr,
+  xml2,
+  tibble,
+  rlang
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.1

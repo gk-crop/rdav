@@ -1,0 +1,15 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+/Meta
+/doc
+/log
+*.Rproj
+/.Rproj.user
+.Rhistory
+/vignettes/log
+doc
+Meta
+/doc/
+/Meta/
