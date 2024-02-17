@@ -19,3 +19,11 @@ vector of downloaded files
 \description{
 Fetches a file or folder (recursively) from the WebDAV server
 }
+\examples{
+  \dontrun{
+
+wd_download(r, "weatherfiles", "d:/data/weather")
+wd_download(r, "test/xyz.txt", "d:/data/abc.txt")
+
+  }
+}

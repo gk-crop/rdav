@@ -17,3 +17,11 @@ TRUE if it is a folder, FALSE else
 \description{
 Checks if the resource on WebDAV is a folder
 }
+\examples{
+  \dontrun{
+
+wd_isdir(r, "testfile.R") # FALSE
+wd_isdir(r, "myfolder")   # TRUE
+
+  }
+}

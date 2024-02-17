@@ -17,3 +17,10 @@ a httr2 request
 \description{
 Creates and authenticate a request handle to the webserver
 }
+\examples{
+  \dontrun{
+# establish a connection, you will be asked for a password
+
+r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
+  }
+}

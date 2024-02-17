@@ -2,7 +2,7 @@
 % Please edit documentation in R/webdav.R
 \name{wd_upload}
 \alias{wd_upload}
-\title{Send a file or folder to WebDAV}
+\title{Uploads a file or folder to WebDAV}
 \usage{
 wd_upload(req, source, target = "")
 }
@@ -17,5 +17,13 @@ wd_upload(req, source, target = "")
 vector of uploaded files
 }
 \description{
-Send a file or folder to WebDAV
+Uploads a file or folder to WebDAV
+}
+\examples{
+  \dontrun{
+
+wd_upload(r, "d:/data/weather", "weatherfiles")
+wd_upload(r, "d:/data/abc.txt", "test/xyz.txt")
+
+  }
 }

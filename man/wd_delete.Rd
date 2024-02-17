@@ -17,3 +17,10 @@ invisibly true on success or false on failure
 \description{
 Deletes a file or folder (collection) on WebDAV server
 }
+\examples{
+  \dontrun{
+
+wd_delete(r, "testfile.R")
+
+  }
+}

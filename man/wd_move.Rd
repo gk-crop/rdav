@@ -19,3 +19,10 @@ invisibly true on success or false on failure
 \description{
 Moves a file or folder on the server
 }
+\examples{
+  \dontrun{
+
+wd_move(r, "testfile.R", "testfile_old.R")
+
+  }
+}

@@ -11,7 +11,7 @@ wd_dir(req, folder = "", full_names = FALSE, as_df = FALSE)
 
 \item{folder}{folder path}
 
-\item{full_names}{whether filenames should be returned with path}
+\item{full_names}{if TRUE, the directory path is prepended to the file names to give a relative file path}
 
 \item{as_df}{outputs a data.frame with file information}
 }
@@ -20,4 +20,22 @@ a vector of filenames or a dataframe
 }
 \description{
 Lists the content of a WebDAV directory
+}
+\examples{
+  \dontrun{
+
+# lists names of files and folders in the main directory
+wd_dir(r)
+
+# lists names of files and folders in the subfolder "myfolder"
+wd_dir(r, "myfolder")
+
+# lists names of files and folders with the relative path
+wd_dir(r, "myfolder", full_names=TRUE)
+
+# returns a data.frame with the columns filename, size and isdir (whether
+# it's a directory or file
+wd_dir(r, "myfolder", as_df=TRUE)
+
+  }
 }

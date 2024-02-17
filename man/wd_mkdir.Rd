@@ -15,5 +15,14 @@ wd_mkdir(req, folder)
 @return invisibly true on success or false on failure
 }
 \description{
-Creates a directory (collection) on WebDAV server
+When create a nested directory, all parent directories have to exist on the
+server.
+}
+\examples{
+  \dontrun{
+
+# creates 'newdir' inside the subdirectory 'existing/directory'
+wd_mkdir(r, "existing/directory/newdir")
+
+  }
 }

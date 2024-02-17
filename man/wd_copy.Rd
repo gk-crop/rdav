@@ -19,3 +19,10 @@ invisibly true on success or false on failure
 \description{
 Copies a file or folder on the WebDAV server
 }
+\examples{
+  \dontrun{
+
+wd_copy(r, "testfile.R", "testfile_old.R")
+
+  }
+}
