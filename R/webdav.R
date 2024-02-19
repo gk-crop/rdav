@@ -211,7 +211,6 @@ wd_mkdir <- function(req, folder) {
 #' @param as_df outputs a data.frame with file information
 #'
 #' @return a vector of filenames or a dataframe
-#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -249,35 +248,44 @@ wd_dir <- function(req, folder="", full_names=FALSE, as_df = FALSE ) {
       httr2::resp_body_xml() |>
       xml2::as_xml_document()
 
-    df <- xml2::as_list(dr) |>
-      tibble::as_tibble() |>
-      tidyr::unnest_wider(.data$`multistatus`, transform=list(href=unlist)) |>
-      tidyr::unnest_wider(.data$`propstat`, transform=list(status=unlist)) |>
-      tidyr::unnest_wider(.data$`prop`, simplify=TRUE,
-                          transform=list(resourcetype=length, getlastmodified=unlist,
-                                         getcontentlength=unlist, getcontenttype=unlist,
-                                         getetag=unlist, `quota-used-bytes`=unlist)) |>
-      dplyr:: mutate(path=gsub(httr2::url_parse(req$url)$path,"",.data$href),file=basename(.data$path))
+    rs <- xml2::xml_find_all(dr,"//*[local-name()='response']")
+
+    href <- sapply(rs, \(x) xml2::xml_find_first(x, "*[local-name()='href']")|>
+                     xml2::xml_text())
+    path <- gsub(httr2::url_parse(req$url)$path,"",href)
+    file <- basename(path)
+
+
+
 
     if(as_df) {
-      if('getcontentlength' %in% names(df) && 'getlastmodified' %in% names(df)) {
-        df <- df |>
-          dplyr::select(.data$file, .data$path, isdir = .data$resourcetype,
-                        size=.data$getcontentlength, lastmodified=.data$getlastmodified,
-                        .data$href)
-      }
-      else {
-        df <- df |>
-          dplyr::select(.data$file, .data$path, isdir = .data$resourcetype, .data$href)
-      }
+      ps <- xml2::xml_find_all(dr,"//*[local-name()='response']/*[local-name()='propstat']/*[local-name()='prop']")
+
+      isdir <- sapply(ps, \(x) xml2::xml_find_first(x,"*[local-name()='resourcetype']") |> xml2::xml_length()==1)
+      lastmodified <- sapply(ps, \(x) xml2::xml_find_first(x,"*[local-name()='getlastmodified']") |> xml2::xml_text())
+      lastmodified <- substr(lastmodified, 6, nchar(lastmodified)) |>
+        as.POSIXct(format="%e %b %Y %H:%M:%S GMT", tz="GMT")
+      contenttype <- sapply(ps, \(x) xml2::xml_find_first(x,"*[local-name()='getcontenttype']") |> xml2::xml_text())
+      size <- sapply(ps, \(x) xml2::xml_find_first(x,"*[local-name()='getcontentlength']") |> xml2::xml_text())
+
+      df <- data.frame(
+        file,
+        path,
+        isdir,
+        size,
+        lastmodified,
+        contenttype,
+        href
+      )
+
       df[-1,]
     }
     else {
       if(full_names) {
-        df$path[-1]
+        path[-1]
       }
       else {
-        df$file[-1]
+        file[-1]
       }
     }
   }
@@ -290,7 +298,6 @@ wd_dir <- function(req, folder="", full_names=FALSE, as_df = FALSE ) {
 #'
 #' @return TRUE if it is a folder, FALSE else
 #' @export
-#' @importFrom rlang .data
 #'
 #' @examples
 #'   \dontrun{
@@ -317,17 +324,11 @@ wd_isdir <- function(req, folder) {
   else {
     dr <- resp |>
       httr2::resp_body_xml() |>
-      xml2::as_xml_document()
+      xml2::as_xml_document() |>
+      xml2::xml_find_all("//*[local-name()='response']/*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='resourcetype']") |>
+      xml2::xml_length()
+    dr[1] == 1
 
-    df <- xml2::as_list(dr) |>
-      tibble::as_tibble() |>
-      tidyr::unnest_wider(.data$`multistatus`, transform=list(href=unlist)) |>
-      tidyr::unnest_wider(.data$`propstat`, transform=list(status=unlist)) |>
-      tidyr::unnest_wider(.data$`prop`, simplify=TRUE,
-                          transform=list(resourcetype=length)) |>
-      dplyr::mutate(isdir = (.data$resourcetype == 1))
-
-    df$isdir[1]
   }
 
 
