@@ -1,11 +1,11 @@
-#' rdav: simple interface to download and upload data from WebDAV ervers
+#' rdav: Interchange Files With 'WebDAV' Servers
 #'
-#' Provides functions to
+#' Provides functions to interchange files with WebDAV servers
 #'
-#' * download a file or a folder (recursively) from a WebDAV server
-#' * upload a file or a folder (recursively) to a WebDAV server
-#' * copy, move, delete files or folders on a WebDAV server
-#' * list directories on the WebDAV server
+#' - download a file or a folder (recursively) from a WebDAV server
+#' - upload a file or a folder (recursively) to a WebDAV server
+#' - copy, move, delete files or folders on a WebDAV server
+#' - list directories on the WebDAV server
 #'
 #' Notice: when uploading or downloading files, they are overwritten without any
 #' warnings.
@@ -36,7 +36,7 @@
 #'
 #'   }
 #'
-#'
+#' @md
 #' @docType package
 #' @name rdav
 "_PACKAGE"
@@ -66,7 +66,7 @@ wd_connect <- function(url, user) {
   resp <- req |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
-  if(httr2::resp_is_error(resp)) {
+  if (httr2::resp_is_error(resp)) {
     stop(httr2::resp_status_desc(resp))
   }
   req
@@ -92,17 +92,16 @@ wd_connect <- function(url, user) {
 wd_copy <- function(req, source, target) {
   resp <- req |>
     httr2::req_url_path_append(source) |>
-    httr2::req_method('COPY') |>
+    httr2::req_method("COPY") |>
     httr2::req_headers(
-      Destination = paste0(req$url,target)
+      Destination = paste0(req$url, target)
     )  |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
-  if(httr2::resp_is_error(resp)) {
+  if (httr2::resp_is_error(resp)) {
     warning(httr2::resp_status_desc(resp))
     invisible(FALSE)
-  }
-  else {
+  } else {
     invisible(TRUE)
   }
 }
@@ -125,17 +124,16 @@ wd_copy <- function(req, source, target) {
 wd_move <- function(req, source, target) {
   resp <- req |>
     httr2::req_url_path_append(source) |>
-    httr2::req_method('MOVE') |>
+    httr2::req_method("MOVE") |>
     httr2::req_headers(
-      Destination = paste0(req$url,target)
+      Destination = paste0(req$url, target)
     )  |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
-  if(httr2::resp_is_error(resp)) {
+  if (httr2::resp_is_error(resp)) {
     warning(httr2::resp_status_desc(resp))
     invisible(FALSE)
-  }
-  else {
+  } else {
     invisible(TRUE)
   }
 }
@@ -161,11 +159,10 @@ wd_delete <- function(req, folder) {
     httr2::req_url_path_append(folder) |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
-  if(httr2::resp_is_error(resp)) {
+  if (httr2::resp_is_error(resp)) {
     warning(httr2::resp_status_desc(resp))
     invisible(FALSE)
-  }
-  else {
+  } else {
     invisible(TRUE)
   }
 }
@@ -194,11 +191,10 @@ wd_mkdir <- function(req, folder) {
     httr2::req_url_path_append(folder) |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
-  if(httr2::resp_is_error(resp)) {
+  if (httr2::resp_is_error(resp)) {
     warning(httr2::resp_status_desc(resp))
     invisible(FALSE)
-  }
-  else {
+  } else {
     invisible(TRUE)
   }
 }
@@ -207,7 +203,8 @@ wd_mkdir <- function(req, folder) {
 #'
 #' @param req request handle
 #' @param folder folder path
-#' @param full_names if TRUE, the directory path is prepended to the file names to give a relative file path
+#' @param full_names if TRUE, the directory path is prepended to the file names
+#'   to give a relative file path
 #' @param as_df outputs a data.frame with file information
 #'
 #' @return a vector of filenames or a dataframe
@@ -230,43 +227,49 @@ wd_mkdir <- function(req, folder) {
 #' wd_dir(r, "myfolder", as_df=TRUE)
 #'
 #'   }
-wd_dir <- function(req, folder="", full_names=FALSE, as_df = FALSE ) {
+wd_dir <- function(req, folder = "", full_names = FALSE, as_df = FALSE) {
 
   resp <- req |>
-    httr2::req_url_path_append(folder)|>
-    httr2::req_method('PROPFIND') |>
+    httr2::req_url_path_append(folder) |>
+    httr2::req_method("PROPFIND") |>
     httr2::req_headers(
       Depth = "1",
     )  |>
     httr2::req_perform()
-  if(httr2::resp_is_error(resp)) {
+  if (httr2::resp_is_error(resp)) {
     warning(httr2::resp_status_desc(resp))
     invisible(NA)
-  }
-  else {
+  } else {
     dr <- resp |>
       httr2::resp_body_xml() |>
       xml2::as_xml_document()
 
-    rs <- xml2::xml_find_all(dr,"//*[local-name()='response']")
+    rs <- xml2::xml_find_all(dr, "//*[local-name()='response']")
 
-    href <- sapply(rs, \(x) xml2::xml_find_first(x, "*[local-name()='href']")|>
-                     xml2::xml_text())
-    path <- gsub(httr2::url_parse(req$url)$path,"",href)
+    href <- sapply(rs, \(x) {
+      xml2::xml_find_first(x, "*[local-name()='href']") |>
+        xml2::xml_text()})
+    path <- gsub(httr2::url_parse(req$url)$path, "", href, fixed = TRUE)
     file <- basename(path)
 
+    if (as_df) {
+      ps <- xml2::xml_find_all(dr,
+        "//*[local-name()='response']/*[local-name()='propstat']/*[local-name()='prop']")
 
-
-
-    if(as_df) {
-      ps <- xml2::xml_find_all(dr,"//*[local-name()='response']/*[local-name()='propstat']/*[local-name()='prop']")
-
-      isdir <- sapply(ps, \(x) xml2::xml_find_first(x,"*[local-name()='resourcetype']") |> xml2::xml_length()==1)
-      lastmodified <- sapply(ps, \(x) xml2::xml_find_first(x,"*[local-name()='getlastmodified']") |> xml2::xml_text())
+      isdir <- sapply(ps, \(x) {
+        xml2::xml_find_first(x, "*[local-name()='resourcetype']") |>
+          xml2::xml_length() == 1})
+      lastmodified <- sapply(ps, \(x) {
+        xml2::xml_find_first(x, "*[local-name()='getlastmodified']") |>
+          xml2::xml_text()})
       lastmodified <- substr(lastmodified, 6, nchar(lastmodified)) |>
-        as.POSIXct(format="%e %b %Y %H:%M:%S GMT", tz="GMT")
-      contenttype <- sapply(ps, \(x) xml2::xml_find_first(x,"*[local-name()='getcontenttype']") |> xml2::xml_text())
-      size <- sapply(ps, \(x) xml2::xml_find_first(x,"*[local-name()='getcontentlength']") |> xml2::xml_text())
+        as.POSIXct(format = "%e %b %Y %H:%M:%S GMT", tz = "GMT")
+      contenttype <- sapply(ps, \(x) {
+        xml2::xml_find_first(x, "*[local-name()='getcontenttype']") |>
+          xml2::xml_text()})
+      size <- sapply(ps, \(x) {
+        xml2::xml_find_first(x, "*[local-name()='getcontentlength']") |>
+          xml2::xml_text()})
 
       df <- data.frame(
         file,
@@ -278,13 +281,11 @@ wd_dir <- function(req, folder="", full_names=FALSE, as_df = FALSE ) {
         href
       )
 
-      df[-1,]
-    }
-    else {
-      if(full_names) {
+      df[-1, ]
+    } else {
+      if (full_names) {
         path[-1]
-      }
-      else {
+      } else {
         file[-1]
       }
     }
@@ -295,6 +296,7 @@ wd_dir <- function(req, folder="", full_names=FALSE, as_df = FALSE ) {
 #'
 #' @param req request handle
 #' @param folder path to folder
+#' @param silent if FALSE a warning is given if the folder does not exists
 #'
 #' @return TRUE if it is a folder, FALSE else
 #' @export
@@ -306,22 +308,21 @@ wd_dir <- function(req, folder="", full_names=FALSE, as_df = FALSE ) {
 #' wd_isdir(r, "myfolder")   # TRUE
 #'
 #'   }
-wd_isdir <- function(req, folder) {
+wd_isdir <- function(req, folder, silent = FALSE) {
 
   resp <- req |>
     httr2::req_url_path_append(folder) |>
-    httr2::req_method('PROPFIND') |>
+    httr2::req_method("PROPFIND") |>
     httr2::req_headers(
       Depth = "0",
     )  |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
 
-  if(httr2::resp_is_error(resp)) {
-    warning(httr2::resp_status_desc(resp))
+  if (httr2::resp_is_error(resp)) {
+    if (!silent) warning(httr2::resp_status_desc(resp))
     invisible(FALSE)
-  }
-  else {
+  } else {
     dr <- resp |>
       httr2::resp_body_xml() |>
       xml2::as_xml_document() |>
@@ -350,31 +351,32 @@ wd_isdir <- function(req, folder) {
 #' wd_upload(r, "d:/data/abc.txt", "test/xyz.txt")
 #'
 #'   }
-wd_upload <- function(req, source, target="") {
-  if(target=="") {
-    target = basename(source)
+wd_upload <- function(req, source, target = "") {
+  if (target == "") {
+    target <- basename(source)
   }
-  if(dir.exists(source)) {
+  if (file.exists(source) && wd_isdir(req, target, silent = TRUE)) {
+    target <- paste0(target, "/", basename(source))
+  }
+  if (dir.exists(source)) {
     ul <- character(0)
     wd_mkdir(req, target)
     fl <- list.files(source, no.. = TRUE)
-    for(f in fl) {
-      ul <- c(ul,wd_upload(req, paste0(source,'/',f),paste0(target,'/',f)))
+    for (f in fl) {
+      ul <- c(ul, wd_upload(req, paste0(source, "/", f), paste0(target, "/", f)))
     }
     invisible(ul)
-  }
-  else {
+  } else {
     resp <- req |>
       httr2::req_method("PUT") |>
       httr2::req_url_path_append(target) |>
       httr2::req_body_file(source) |>
-      httr2::req_error(is_error = \(x) FALSE)|>
+      httr2::req_error(is_error = \(x) FALSE) |>
       httr2::req_perform()
-    if(httr2::resp_is_error(resp)) {
+    if (httr2::resp_is_error(resp)) {
       warning(httr2::resp_status_desc(resp))
       invisible(character(0))
-    }
-    else {
+    } else {
       invisible(target)
     }
   }
@@ -396,38 +398,34 @@ wd_upload <- function(req, source, target="") {
 #' wd_download(r, "test/xyz.txt", "d:/data/abc.txt")
 #'
 #'   }
-wd_download <-  function(req, source, target="") {
-  if(target=="") {
-    target = basename(source)
+wd_download <-  function(req, source, target = "") {
+  if (target == "") {
+    target <- basename(source)
   }
-  if(wd_isdir(req, source)) {
+  isdir <- wd_isdir(req, source, silent = TRUE)
+  if (!isdir && dir.exists(target)) {
+    target <- paste0(target, "/", basename(source))
+  }
+  if (isdir) {
     dl <- character(0)
     fl <- wd_dir(req, source)
     dir.create(target)
-    for(f in fl) {
-      dl <- c(dl, wd_download(req, paste0(source,'/',f),paste0(target,'/',f)))
+    for (f in fl) {
+      dl <- c(dl,
+              wd_download(req, paste0(source, "/", f), paste0(target, "/", f)))
     }
     invisible(dl)
-  }
-  else {
+  } else {
     resp <- req |>
       httr2::req_method("GET") |>
       httr2::req_url_path_append(source) |>
       httr2::req_error(is_error = \(x) FALSE) |>
       httr2::req_perform(target)
-    if(httr2::resp_is_error(resp)) {
+    if (httr2::resp_is_error(resp)) {
       warning(httr2::resp_status_desc(resp))
       invisible(character(0))
-    }
-    else {
+    } else {
       invisible(target)
     }
   }
 }
-
-
-
-
-
-
-

@@ -1,3 +1,7 @@
+Version 0.0.4
+* on up-/download files the target can be a folder
+* wd_isdir get's a "silent" parameter
+
 Version 0.0.3
 * dropped direct dependency on dplyr, tidyr, tibble
 * added content-type column to dir data.frame

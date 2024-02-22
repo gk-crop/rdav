@@ -1,8 +1,8 @@
 Package: rdav
 Type: Package
 Title: Simple 'WebDAV' Client
-Version: 0.0.3
-Date: 2024-02-19
+Version: 0.0.4
+Date: 2024-02-22
 Author: Gunther Krauss
 Maintainer: Gunther Krauss <guntherkrauss@uni-bonn.de>
 Description: A simple 'WebDAV' client that provides functions to fetch and send 

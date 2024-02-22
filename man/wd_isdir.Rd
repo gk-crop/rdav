@@ -4,12 +4,14 @@
 \alias{wd_isdir}
 \title{Checks if the resource on WebDAV is a folder}
 \usage{
-wd_isdir(req, folder)
+wd_isdir(req, folder, silent = FALSE)
 }
 \arguments{
 \item{req}{request handle}
 
 \item{folder}{path to folder}
+
+\item{silent}{if FALSE a warning is given if the folder does not exists}
 }
 \value{
 TRUE if it is a folder, FALSE else

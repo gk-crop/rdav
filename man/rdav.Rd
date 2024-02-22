@@ -4,15 +4,17 @@
 \name{rdav}
 \alias{rdav-package}
 \alias{rdav}
-\title{rdav: simple interface to download and upload data from WebDAV ervers}
+\title{rdav: Interchange Files With 'WebDAV' Servers}
 \description{
-Provides functions to
+Provides functions to interchange files with WebDAV servers
 }
 \details{
-* download a file or a folder (recursively) from a WebDAV server
-* upload a file or a folder (recursively) to a WebDAV server
-* copy, move, delete files or folders on a WebDAV server
-* list directories on the WebDAV server
+\itemize{
+\item download a file or a folder (recursively) from a WebDAV server
+\item upload a file or a folder (recursively) to a WebDAV server
+\item copy, move, delete files or folders on a WebDAV server
+\item list directories on the WebDAV server
+}
 
 Notice: when uploading or downloading files, they are overwritten without any
 warnings.
@@ -39,7 +41,6 @@ wd_upload(r, "testfile.R", "myfolder/testfile.R")
 wd_download(r, "myfolder", "d:/data/fromserver")
 
   }
-
 
 }
 \seealso{

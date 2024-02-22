@@ -11,7 +11,8 @@ wd_dir(req, folder = "", full_names = FALSE, as_df = FALSE)
 
 \item{folder}{folder path}
 
-\item{full_names}{if TRUE, the directory path is prepended to the file names to give a relative file path}
+\item{full_names}{if TRUE, the directory path is prepended to the file names
+to give a relative file path}
 
 \item{as_df}{outputs a data.frame with file information}
 }
