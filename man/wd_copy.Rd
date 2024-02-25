@@ -4,7 +4,7 @@
 \alias{wd_copy}
 \title{Copies a file or folder on the WebDAV server}
 \usage{
-wd_copy(req, source, target)
+wd_copy(req, source, target, overwrite = TRUE)
 }
 \arguments{
 \item{req}{request handle}
@@ -12,6 +12,8 @@ wd_copy(req, source, target)
 \item{source}{path of the source on server}
 
 \item{target}{target path on the server}
+
+\item{overwrite}{overwrites files (default)}
 }
 \value{
 invisibly true on success or false on failure
@@ -20,9 +22,9 @@ invisibly true on success or false on failure
 Copies a file or folder on the WebDAV server
 }
 \examples{
-  \dontrun{
+\dontrun{
 
 wd_copy(r, "testfile.R", "testfile_old.R")
 
-  }
+}
 }

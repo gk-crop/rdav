@@ -23,7 +23,7 @@ a vector of filenames or a dataframe
 Lists the content of a WebDAV directory
 }
 \examples{
-  \dontrun{
+\dontrun{
 
 # lists names of files and folders in the main directory
 wd_dir(r)
@@ -38,5 +38,5 @@ wd_dir(r, "myfolder", full_names=TRUE)
 # it's a directory or file
 wd_dir(r, "myfolder", as_df=TRUE)
 
-  }
+}
 }

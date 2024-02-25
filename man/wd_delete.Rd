@@ -18,9 +18,9 @@ invisibly true on success or false on failure
 Deletes a file or folder (collection) on WebDAV server
 }
 \examples{
-  \dontrun{
+\dontrun{
 
 wd_delete(r, "testfile.R")
 
-  }
+}
 }

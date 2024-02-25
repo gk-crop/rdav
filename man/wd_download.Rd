@@ -20,10 +20,10 @@ vector of downloaded files
 Fetches a file or folder (recursively) from the WebDAV server
 }
 \examples{
-  \dontrun{
+\dontrun{
 
 wd_download(r, "weatherfiles", "d:/data/weather")
 wd_download(r, "test/xyz.txt", "d:/data/abc.txt")
 
-  }
+}
 }

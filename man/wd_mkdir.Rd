@@ -19,10 +19,10 @@ When create a nested directory, all parent directories have to exist on the
 server.
 }
 \examples{
-  \dontrun{
+\dontrun{
 
 # creates 'newdir' inside the subdirectory 'existing/directory'
 wd_mkdir(r, "existing/directory/newdir")
 
-  }
+}
 }

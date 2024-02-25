@@ -20,7 +20,7 @@ Notice: when uploading or downloading files, they are overwritten without any
 warnings.
 }
 \examples{
-  \dontrun{
+\dontrun{
 # establish a connection, you will be asked for a password
 r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
 
@@ -40,7 +40,7 @@ wd_upload(r, "testfile.R", "myfolder/testfile.R")
 # store it in 'd:/data/fromserver' on your computer
 wd_download(r, "myfolder", "d:/data/fromserver")
 
-  }
+}
 
 }
 \seealso{

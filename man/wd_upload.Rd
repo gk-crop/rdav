@@ -20,10 +20,10 @@ vector of uploaded files
 Uploads a file or folder to WebDAV
 }
 \examples{
-  \dontrun{
+\dontrun{
 
 wd_upload(r, "d:/data/weather", "weatherfiles")
 wd_upload(r, "d:/data/abc.txt", "test/xyz.txt")
 
-  }
+}
 }

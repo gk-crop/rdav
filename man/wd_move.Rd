@@ -4,7 +4,7 @@
 \alias{wd_move}
 \title{Moves a file or folder on the server}
 \usage{
-wd_move(req, source, target)
+wd_move(req, source, target, overwrite = TRUE)
 }
 \arguments{
 \item{req}{request handle}
@@ -12,6 +12,8 @@ wd_move(req, source, target)
 \item{source}{path of the source on server}
 
 \item{target}{target path on the server}
+
+\item{overwrite}{overwrites files (default)}
 }
 \value{
 invisibly true on success or false on failure
@@ -20,9 +22,9 @@ invisibly true on success or false on failure
 Moves a file or folder on the server
 }
 \examples{
-  \dontrun{
+\dontrun{
 
 wd_move(r, "testfile.R", "testfile_old.R")
 
-  }
+}
 }

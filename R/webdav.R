@@ -14,7 +14,7 @@
 #'
 #'
 #' @examples
-#'   \dontrun{
+#' \dontrun{
 #' # establish a connection, you will be asked for a password
 #' r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
 #'
@@ -34,7 +34,7 @@
 #' # store it in 'd:/data/fromserver' on your computer
 #' wd_download(r, "myfolder", "d:/data/fromserver")
 #'
-#'   }
+#' }
 #'
 #' @md
 #' @docType package
@@ -42,27 +42,43 @@
 "_PACKAGE"
 
 
+ns <- c(
+  d = "DAV:",
+  s = "http://sabredav.org/ns",
+  oc = "http://owncloud.org/ns"
+)
 
 
 #' Establishes a connection to a WebDAV server
 #'
 #' Creates and authenticate a request handle to the webserver
 #'
+#' Notice: it's not recommended to write the password as plain text. Either omit
+#' the parameter (then you will be asked to enter a password interactively)
+#' or use for example the system credential store via keyring package.
+#'
 #' @param url url of the webdav folder
-#' @param user username
+#' @param username username
+#' @param password password - if not given, you will be asked for it
 #'
 #' @return a httr2 request
 #' @export
 #' @examples
-#'   \dontrun{
 #' # establish a connection, you will be asked for a password
-#'
+#' \dontrun{
 #' r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
-#'   }
+#'
+#' # establish a connection, use keyring package to retrieve the password
+#' keyring::key_set("mydav", "exampleuser")
+#' r <- wd_connect("https://example.com/remote.php/webdav/",
+#'                 "exampleuser"
+#'                 keyring::key_get("mydav", "exampleuser"))
+#' }
 
-wd_connect <- function(url, user) {
+
+wd_connect <- function(url, username, password = NULL) {
   req <- httr2::request(url) |>
-    httr2::req_auth_basic(user)
+    httr2::req_auth_basic(username, password)
   resp <- req |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
@@ -78,28 +94,31 @@ wd_connect <- function(url, user) {
 #' @param req request handle
 #' @param source path of the source on server
 #' @param target target path on the server
+#' @param overwrite overwrites files (default)
 #'
 #' @return invisibly true on success or false on failure
 #' @export
 #'
 #' @examples
-#'   \dontrun{
+#' \dontrun{
 #'
 #' wd_copy(r, "testfile.R", "testfile_old.R")
 #'
-#'   }
+#' }
 
-wd_copy <- function(req, source, target) {
+wd_copy <- function(req, source, target, overwrite = TRUE) {
   resp <- req |>
     httr2::req_url_path_append(source) |>
     httr2::req_method("COPY") |>
     httr2::req_headers(
+      Overwrite = ifelse(overwrite, "T", "F"),
       Destination = paste0(req$url, target)
     )  |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
   if (httr2::resp_is_error(resp)) {
-    warning(httr2::resp_status_desc(resp))
+    warning(paste("File could not be copied. Maybe the file already exists. ",
+                  httr2::resp_status_desc(resp)))
     invisible(FALSE)
   } else {
     invisible(TRUE)
@@ -111,27 +130,30 @@ wd_copy <- function(req, source, target) {
 #' @param req request handle
 #' @param source path of the source on server
 #' @param target target path on the server
+#' @param overwrite overwrites files (default)
 #'
 #' @return invisibly true on success or false on failure
 #' @export
 #'
 #' @examples
-#'   \dontrun{
+#' \dontrun{
 #'
 #' wd_move(r, "testfile.R", "testfile_old.R")
 #'
-#'   }
-wd_move <- function(req, source, target) {
+#' }
+wd_move <- function(req, source, target, overwrite = TRUE) {
   resp <- req |>
     httr2::req_url_path_append(source) |>
     httr2::req_method("MOVE") |>
     httr2::req_headers(
+      Overwrite = ifelse(overwrite, "T", "F"),
       Destination = paste0(req$url, target)
     )  |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
   if (httr2::resp_is_error(resp)) {
-    warning(httr2::resp_status_desc(resp))
+    warning(paste("File could not be moved. Maybe target file already exists. ",
+                  httr2::resp_status_desc(resp)))
     invisible(FALSE)
   } else {
     invisible(TRUE)
@@ -148,11 +170,11 @@ wd_move <- function(req, source, target) {
 #' @export
 #'
 #' @examples
-#'   \dontrun{
+#' \dontrun{
 #'
 #' wd_delete(r, "testfile.R")
 #'
-#'   }
+#' }
 wd_delete <- function(req, folder) {
   resp <- req |>
     httr2::req_method("DELETE") |>
@@ -179,12 +201,12 @@ wd_delete <- function(req, folder) {
 #' @export
 #'
 #' @examples
-#'   \dontrun{
+#' \dontrun{
 #'
 #' # creates 'newdir' inside the subdirectory 'existing/directory'
 #' wd_mkdir(r, "existing/directory/newdir")
 #'
-#'   }
+#' }
 wd_mkdir <- function(req, folder) {
   resp <- req |>
     httr2::req_method("MKCOL") |>
@@ -211,7 +233,7 @@ wd_mkdir <- function(req, folder) {
 #' @export
 #'
 #' @examples
-#'   \dontrun{
+#' \dontrun{
 #'
 #' # lists names of files and folders in the main directory
 #' wd_dir(r)
@@ -226,14 +248,14 @@ wd_mkdir <- function(req, folder) {
 #' # it's a directory or file
 #' wd_dir(r, "myfolder", as_df=TRUE)
 #'
-#'   }
+#' }
 wd_dir <- function(req, folder = "", full_names = FALSE, as_df = FALSE) {
 
   resp <- req |>
     httr2::req_url_path_append(folder) |>
     httr2::req_method("PROPFIND") |>
     httr2::req_headers(
-      Depth = "1",
+      Depth = "1"
     )  |>
     httr2::req_perform()
   if (httr2::resp_is_error(resp)) {
@@ -244,32 +266,44 @@ wd_dir <- function(req, folder = "", full_names = FALSE, as_df = FALSE) {
       httr2::resp_body_xml() |>
       xml2::as_xml_document()
 
-    rs <- xml2::xml_find_all(dr, "//*[local-name()='response']")
+    rs <- xml2::xml_find_all(dr, "//d:response", ns)
 
-    href <- sapply(rs, \(x) {
-      xml2::xml_find_first(x, "*[local-name()='href']") |>
-        xml2::xml_text()})
+    href <- sapply(rs,
+                   \(x) {
+                     xml2::xml_find_first(x, "d:href", ns) |>
+                       xml2::xml_text()
+                   })
     path <- gsub(httr2::url_parse(req$url)$path, "", href, fixed = TRUE)
     file <- basename(path)
 
     if (as_df) {
-      ps <- xml2::xml_find_all(dr,
-        "//*[local-name()='response']/*[local-name()='propstat']/*[local-name()='prop']")
+      ps <- xml2::xml_find_all(dr, "//d:response/d:propstat/d:prop", ns)
 
-      isdir <- sapply(ps, \(x) {
-        xml2::xml_find_first(x, "*[local-name()='resourcetype']") |>
-          xml2::xml_length() == 1})
-      lastmodified <- sapply(ps, \(x) {
-        xml2::xml_find_first(x, "*[local-name()='getlastmodified']") |>
-          xml2::xml_text()})
+      isdir <- sapply(ps,
+                      \(x) {
+                        xml2::xml_find_first(x,
+                                             "d:resourcetype/d:collection",
+                                             ns) |>
+                          length() > 0
+                      })
+      lastmodified <- sapply(ps,
+                             \(x) {
+                               xml2::xml_find_first(x,
+                                                    "d:getlastmodified",
+                                                    ns) |>
+                                 xml2::xml_text()})
       lastmodified <- substr(lastmodified, 6, nchar(lastmodified)) |>
         as.POSIXct(format = "%e %b %Y %H:%M:%S GMT", tz = "GMT")
-      contenttype <- sapply(ps, \(x) {
-        xml2::xml_find_first(x, "*[local-name()='getcontenttype']") |>
-          xml2::xml_text()})
-      size <- sapply(ps, \(x) {
-        xml2::xml_find_first(x, "*[local-name()='getcontentlength']") |>
-          xml2::xml_text()})
+      contenttype <- sapply(ps,
+                            \(x) {
+                              xml2::xml_find_first(x, "d:getcontenttype", ns) |>
+                                xml2::xml_text()
+                            })
+      size <- sapply(ps,
+                     \(x) {
+                       xml2::xml_find_first(x, "d:getcontentlength", ns) |>
+                         xml2::xml_text()
+                     })
 
       df <- data.frame(
         file,
@@ -302,12 +336,12 @@ wd_dir <- function(req, folder = "", full_names = FALSE, as_df = FALSE) {
 #' @export
 #'
 #' @examples
-#'   \dontrun{
+#' \dontrun{
 #'
 #' wd_isdir(r, "testfile.R") # FALSE
 #' wd_isdir(r, "myfolder")   # TRUE
 #'
-#'   }
+#' }
 wd_isdir <- function(req, folder, silent = FALSE) {
 
   resp <- req |>
@@ -315,7 +349,12 @@ wd_isdir <- function(req, folder, silent = FALSE) {
     httr2::req_method("PROPFIND") |>
     httr2::req_headers(
       Depth = "0",
+      ContentType = "application/xml"
     )  |>
+    httr2::req_body_raw('<?xml version="1.0" encoding="utf-8" ?>
+      <d:propfind xmlns:d=\"DAV:\">
+       <d:prop><d:resourcetype/></d:prop>
+      </d:propfind>') |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
 
@@ -326,13 +365,13 @@ wd_isdir <- function(req, folder, silent = FALSE) {
     dr <- resp |>
       httr2::resp_body_xml() |>
       xml2::as_xml_document() |>
-      xml2::xml_find_all("//*[local-name()='response']/*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='resourcetype']") |>
-      xml2::xml_length()
-    dr[1] == 1
+      xml2::xml_find_first(
+        "//d:response/d:propstat/d:prop/d:resourcetype/d:collection",
+        ns) |>
+      length()
+    dr[1] > 0
 
   }
-
-
 }
 
 #' Uploads a file or folder to WebDAV
@@ -345,12 +384,12 @@ wd_isdir <- function(req, folder, silent = FALSE) {
 #' @export
 #'
 #' @examples
-#'   \dontrun{
+#' \dontrun{
 #'
 #' wd_upload(r, "d:/data/weather", "weatherfiles")
 #' wd_upload(r, "d:/data/abc.txt", "test/xyz.txt")
 #'
-#'   }
+#' }
 wd_upload <- function(req, source, target = "") {
   if (target == "") {
     target <- basename(source)
@@ -359,13 +398,13 @@ wd_upload <- function(req, source, target = "") {
     target <- paste0(target, "/", basename(source))
   }
   if (dir.exists(source)) {
-    ul <- character(0)
+    u <- character(0)
     wd_mkdir(req, target)
     fl <- list.files(source, no.. = TRUE)
     for (f in fl) {
-      ul <- c(ul, wd_upload(req, paste0(source, "/", f), paste0(target, "/", f)))
+      u <- c(u, wd_upload(req, paste0(source, "/", f), paste0(target, "/", f)))
     }
-    invisible(ul)
+    invisible(u)
   } else {
     resp <- req |>
       httr2::req_method("PUT") |>
@@ -392,12 +431,12 @@ wd_upload <- function(req, source, target = "") {
 #' @export
 #'
 #' @examples
-#'   \dontrun{
+#' \dontrun{
 #'
 #' wd_download(r, "weatherfiles", "d:/data/weather")
 #' wd_download(r, "test/xyz.txt", "d:/data/abc.txt")
 #'
-#'   }
+#' }
 wd_download <-  function(req, source, target = "") {
   if (target == "") {
     target <- basename(source)
