@@ -30,7 +30,9 @@ or use for example the system credential store via keyring package.
 r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
 
 # establish a connection, use keyring package to retrieve the password
-keyring::key_set("mydav", "exampleuser")
+
+keyring::key_set("mydav", "exampleuser") # call only once
+
 r <- wd_connect("https://example.com/remote.php/webdav/",
                 "exampleuser"
                 keyring::key_get("mydav", "exampleuser"))

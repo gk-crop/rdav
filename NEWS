@@ -1,3 +1,7 @@
+Version 0.0.6
+* handle special chars in filenames
+* minor improvements
+
 Version 0.0.5
 * wd_connect accepts now a password
 * wd_copy / wd_move have now a overwrite parameter (default TRUE)

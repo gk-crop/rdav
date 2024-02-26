@@ -1,8 +1,8 @@
 Package: rdav
 Type: Package
 Title: Simple 'WebDAV' Client
-Version: 0.0.5
-Date: 2024-02-25
+Version: 0.0.6
+Date: 2024-02-26
 Author: Gunther Krauss
 Maintainer: Gunther Krauss <guntherkrauss@uni-bonn.de>
 Description: A simple 'WebDAV' client that provides functions to fetch and send 
@@ -12,6 +12,7 @@ License: GPL-2
 URL: https://github.com/gk-crop/rdav
 BugReports: https://github.com/gk-crop/rdav/issues
 Imports:
+  utils,
   httr2,
   xml2
 Suggests: keyring
