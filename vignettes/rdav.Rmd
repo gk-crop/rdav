@@ -1,6 +1,15 @@
 ---
 title: "rdav"
-output: rmarkdown::html_vignette
+author: "Gunther Krauss"
+date: "`r Sys.setlocale('LC_ALL','English.utf8');format(Sys.Date(),format='%B %d,  %Y')`"
+output: 
+  rmarkdown::html_vignette:
+    number_sections: yes
+  rmarkdown::pdf_document:
+    number_sections: yes
+    df_print: kable
+    toc: yes
+
 vignette: >
   %\VignetteIndexEntry{rdav}
   %\VignetteEngine{knitr::rmarkdown}
@@ -14,13 +23,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, echo=FALSE, eval=FALSE}
 library(rdav)
 ```
 
-# 'rdav' - Simple WebDAV client to upload and download data
+"rdav" is a simple WebDAV client to upload and download data from cloud services.
 
-## A first example
+# A first example
 
 - Load Data from a WebDAV server,
 - read the downloaded file, 
@@ -45,7 +54,7 @@ wd_upload(r, "data_plot.png", "data_plot.png")
 ```
 
 
-## WebDAV, OwnCloud, NextCloud
+# WebDAV, OwnCloud, NextCloud
 
 The WebDAV protocol provides a framework to create, change and move documents on a server. 
 Many cloud based storage systems provide WebDAV access, e.g. systems based on OwnCloud or NextCloud. This includes many cloud services offered by universities, organisations companies as well as many self hosted clouds on NAS or Raspberry Pi.
@@ -64,10 +73,10 @@ As username one has to use the share token, i. e. the cryptic number and letter 
 
 
 
-## Using the package functions
+# Using the package functions
 
 
-### Establishing the connection
+## Establishing the connection
 
 To interact with the WebDAV server, you have to create a connection via `wd_connect` by supplying the URL, username and password. 
 
@@ -115,7 +124,7 @@ r <- wd_connect(url = "https://cloud.example.com/remote.php/webdav/",
 ```
 
 
-### Downloading and uploading data
+## Downloading and uploading data
 
 To download a file, you have to give the path of the filename on the server,
 as well as the path to the location where you want to store the file on your
@@ -185,19 +194,41 @@ wd_mkdir(r, "data/soil")
 wd_mkdir(r, "data/soil/new")
 ```
 
-## Security considerations
+## Get informations about files and directories
+
+You can get the list of files and subfolders as a character vector by using `wd_dir`.
+Using the parameter `full_names = TRUE` will give you the files with relative paths.
+
+To get more information about files, you can use the option `as_df = TRUE`. You will then
+get a data.frame with additional columns like size, last modification date and contenttype.
+
+```{r, eval=FALSE}
+
+wd_dir(r) # get content of main folder
+wd_dir(r, "example")
+wd_dir(r, "example", full_names = TRUE)
+wd_dir(r, "example", as_df = TRUE)
+```
+
+
+
+
+
+
+
+# Security considerations
 
 Here some thougths, how to better protect the data, if there is some risk that
 your password get's disclosed by using it within scripts.
 
 
-### Don't put passwords in your code
+## Don't put passwords in your code
 
 You should avoid putting passwords in your code. See the example in the
 sections above how to use system credential store.
 
 
-### Use application passwords instead of account passwords
+## Use application passwords instead of account passwords
 
 Some cloud services offer you the possibility to create additional application 
 passwords. If you use an application password with `rdav`, and the password
@@ -205,7 +236,7 @@ gets somehow disclosed, you can just delete the application password and
 create a new one. You don't have to change then your account's password.
 
 
-### Use password protected public shares instead direct account
+## Use password protected public shares instead direct account
 
 Instead accessing the full account, you may create a subfolder and share it 
 via a public link, adding a password. You can give the share full read / write and
@@ -216,7 +247,7 @@ If someone gets access to your share, only the data in this folder can then be
 manipulated.
 
 
-### When sharing data, use different shares for writing and reading
+## When sharing data, use different shares for writing and reading
 
 If you want to share data with other people, create public shares. Don't give
 them your account credentials.
@@ -234,3 +265,9 @@ process uploaded files and save results you want to share to the download folder
 This will prevent that someone who gained access to the share to distribute
 illegal content. Even if illegal content might then get uploaded, no one else
 can download it.
+
+# Some tips and tricks
+
+- You can establish more than one connection and use different WebDAV servers simultaneously
+- If you want to work only in a subdirectory, you can append it to the WebDAV URL `https://cloud.example.com/remote.php/webdav/my/sub/directory`. Then you don't have to specify the full path when working with files this directory.
+
