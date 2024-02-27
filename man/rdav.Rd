@@ -10,9 +10,9 @@ Provides functions to interchange files with WebDAV servers
 }
 \details{
 \itemize{
-\item download a file or a folder (recursively) from a WebDAV server
-\item upload a file or a folder (recursively) to a WebDAV server
-\item copy, move, delete files or folders on a WebDAV server
+\item download a file or a directory (recursively) from a WebDAV server
+\item upload a file or a directory (recursively) to a WebDAV server
+\item copy, move, delete files or directories on a WebDAV server
 \item list directories on the WebDAV server
 }
 
@@ -24,21 +24,21 @@ warnings.
 # establish a connection, you will be asked for a password
 r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
 
-# show files / folders in main directory
+# show files / directoriess in main directory
 wd_dir(r)
 
 # lists 'subdir', returns a dataframe
 wd_dir(r, "subdir", as_df = TRUE)
 
-# create folder 'myfolder' on the server
-wd_mkdir(r,"myfolder")
+# create directory 'mydirectory' on the server
+wd_mkdir(r,"mydirectory")
 
-# upload the local file testfile.R to the subfolder 'myfolder'
-wd_upload(r, "testfile.R", "myfolder/testfile.R")
+# upload the local file testfile.R to the subdirectory 'mydirectory'
+wd_upload(r, "testfile.R", "mydirectory/testfile.R")
 
-# download content of 'myfolder' from the server and
+# download content of 'mydirectory' from the server and
 # store it in 'd:/data/fromserver' on your computer
-wd_download(r, "myfolder", "d:/data/fromserver")
+wd_download(r, "mydirectory", "d:/data/fromserver")
 
 }
 

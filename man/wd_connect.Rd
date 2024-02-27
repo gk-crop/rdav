@@ -7,17 +7,17 @@
 wd_connect(url, username, password = NULL)
 }
 \arguments{
-\item{url}{url of the webdav folder}
+\item{url}{url of the WebDAV directory}
 
 \item{username}{username}
 
 \item{password}{password - if not given, you will be asked for it}
 }
 \value{
-a httr2 request
+a httr2 request to the WebDAV server location
 }
 \description{
-Creates and authenticate a request handle to the webserver
+Creates and authenticate a request handle to the WebDAV server
 }
 \details{
 Notice: it's not recommended to write the password as plain text. Either omit
@@ -25,9 +25,11 @@ the parameter (then you will be asked to enter a password interactively)
 or use for example the system credential store via keyring package.
 }
 \examples{
-# establish a connection, you will be asked for a password
 \dontrun{
+# establish a connection, you will be asked for a password
+
 r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
+
 
 # establish a connection, use keyring package to retrieve the password
 

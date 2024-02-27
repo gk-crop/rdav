@@ -2,20 +2,20 @@
 % Please edit documentation in R/webdav.R
 \name{wd_delete}
 \alias{wd_delete}
-\title{Deletes a file or folder (collection) on WebDAV server}
+\title{Deletes a file or directory (collection) on WebDAV server}
 \usage{
-wd_delete(req, folder)
+wd_delete(req, file)
 }
 \arguments{
-\item{req}{request handle}
+\item{req}{request handle obtained from \code{\link{wd_connect}}}
 
-\item{folder}{folder}
+\item{file}{path to file or directory to delete on the server}
 }
 \value{
-invisibly true on success or false on failure
+TRUE on success, FALSE on failure (invisibly)
 }
 \description{
-Deletes a file or folder (collection) on WebDAV server
+Deletes a file or directory (collection) on WebDAV server
 }
 \examples{
 \dontrun{

@@ -2,9 +2,9 @@
 #'
 #' Provides functions to interchange files with WebDAV servers
 #'
-#' - download a file or a folder (recursively) from a WebDAV server
-#' - upload a file or a folder (recursively) to a WebDAV server
-#' - copy, move, delete files or folders on a WebDAV server
+#' - download a file or a directory (recursively) from a WebDAV server
+#' - upload a file or a directory (recursively) to a WebDAV server
+#' - copy, move, delete files or directories on a WebDAV server
 #' - list directories on the WebDAV server
 #'
 #' Notice: when uploading or downloading files, they are overwritten without any
@@ -18,21 +18,21 @@
 #' # establish a connection, you will be asked for a password
 #' r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
 #'
-#' # show files / folders in main directory
+#' # show files / directoriess in main directory
 #' wd_dir(r)
 #'
 #' # lists 'subdir', returns a dataframe
 #' wd_dir(r, "subdir", as_df = TRUE)
 #'
-#' # create folder 'myfolder' on the server
-#' wd_mkdir(r,"myfolder")
+#' # create directory 'mydirectory' on the server
+#' wd_mkdir(r,"mydirectory")
 #'
-#' # upload the local file testfile.R to the subfolder 'myfolder'
-#' wd_upload(r, "testfile.R", "myfolder/testfile.R")
+#' # upload the local file testfile.R to the subdirectory 'mydirectory'
+#' wd_upload(r, "testfile.R", "mydirectory/testfile.R")
 #'
-#' # download content of 'myfolder' from the server and
+#' # download content of 'mydirectory' from the server and
 #' # store it in 'd:/data/fromserver' on your computer
-#' wd_download(r, "myfolder", "d:/data/fromserver")
+#' wd_download(r, "mydirectory", "d:/data/fromserver")
 #'
 #' }
 #'
@@ -51,22 +51,24 @@ ns <- c(
 
 #' Establishes a connection to a WebDAV server
 #'
-#' Creates and authenticate a request handle to the webserver
+#' Creates and authenticate a request handle to the WebDAV server
 #'
 #' Notice: it's not recommended to write the password as plain text. Either omit
 #' the parameter (then you will be asked to enter a password interactively)
 #' or use for example the system credential store via keyring package.
 #'
-#' @param url url of the webdav folder
+#' @param url url of the WebDAV directory
 #' @param username username
 #' @param password password - if not given, you will be asked for it
 #'
-#' @return a httr2 request
+#' @return a httr2 request to the WebDAV server location
 #' @export
 #' @examples
-#' # establish a connection, you will be asked for a password
 #' \dontrun{
+#' # establish a connection, you will be asked for a password
+#'
 #' r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
+#'
 #'
 #' # establish a connection, use keyring package to retrieve the password
 #'
@@ -92,14 +94,14 @@ wd_connect <- function(url, username, password = NULL) {
 }
 
 
-#' Copies a file or folder on the WebDAV server
+#' Copies a file or directory on the WebDAV server
 #'
-#' @param req request handle
-#' @param source path of the source on server
-#' @param target target path on the server
-#' @param overwrite overwrites files (default)
+#' @param req request handle obtained from \code{\link{wd_connect}}
+#' @param source path of the source on the server
+#' @param target path of the target on the server
+#' @param overwrite overwrites files when TRUE (default)
 #'
-#' @return invisibly true on success or false on failure
+#' @return TRUE on success, FALSE on failure (invisibly)
 #' @export
 #'
 #' @examples
@@ -120,22 +122,22 @@ wd_copy <- function(req, source, target, overwrite = TRUE) {
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
   if (httr2::resp_is_error(resp)) {
-    warning(paste("File could not be copied. Maybe the file already exists. ",
-                  httr2::resp_status_desc(resp)))
+    warning("File could not be copied. Maybe the file already exists. ",
+            httr2::resp_status_desc(resp))
     invisible(FALSE)
   } else {
     invisible(TRUE)
   }
 }
 
-#' Moves a file or folder on the server
+#' Moves a file or directory on the server
 #'
-#' @param req request handle
-#' @param source path of the source on server
-#' @param target target path on the server
-#' @param overwrite overwrites files (default)
+#' @param req request handle obtained from \code{\link{wd_connect}}
+#' @param source path of the source on the server
+#' @param target path of the target on the server
+#' @param overwrite overwrites files  when TRUE (default)
 #'
-#' @return invisibly true on success or false on failure
+#' @return TRUE on success, FALSE on failure (invisibly)
 #' @export
 #'
 #' @examples
@@ -155,8 +157,8 @@ wd_move <- function(req, source, target, overwrite = TRUE) {
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
   if (httr2::resp_is_error(resp)) {
-    warning(paste("File could not be moved. Maybe target file already exists. ",
-                  httr2::resp_status_desc(resp)))
+    warning("File could not be moved. Maybe target file already exists. ",
+            httr2::resp_status_desc(resp))
     invisible(FALSE)
   } else {
     invisible(TRUE)
@@ -164,12 +166,12 @@ wd_move <- function(req, source, target, overwrite = TRUE) {
 }
 
 
-#' Deletes a file or folder (collection) on WebDAV server
+#' Deletes a file or directory (collection) on WebDAV server
 #'
-#' @param req request handle
-#' @param folder folder
+#' @param req request handle obtained from \code{\link{wd_connect}}
+#' @param file path to file or directory to delete on the server
 #'
-#' @return invisibly true on success or false on failure
+#' @return TRUE on success, FALSE on failure (invisibly)
 #' @export
 #'
 #' @examples
@@ -178,10 +180,10 @@ wd_move <- function(req, source, target, overwrite = TRUE) {
 #' wd_delete(r, "testfile.R")
 #'
 #' }
-wd_delete <- function(req, folder) {
+wd_delete <- function(req, file) {
   resp <- req |>
     httr2::req_method("DELETE") |>
-    httr2::req_url_path_append(utils::URLencode(folder)) |>
+    httr2::req_url_path_append(utils::URLencode(file)) |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
   if (httr2::resp_is_error(resp)) {
@@ -194,13 +196,13 @@ wd_delete <- function(req, folder) {
 
 #' Creates a directory (collection) on WebDAV server
 #'
-#' When create a nested directory, all parent directories have to exist on the
+#' When creating a subdirectoy, all parent directories have to exist on the
 #' server.
 #'
-#' @param req request handle
-#' @param folder folder path on server
+#' @param req request handle obtained from \code{\link{wd_connect}}
+#' @param directory directory path on server
 #'
-#' @return @return invisibly true on success or false on failure
+#' @return TRUE on success, FALSE on failure (invisibly)
 #' @export
 #'
 #' @examples
@@ -210,10 +212,10 @@ wd_delete <- function(req, folder) {
 #' wd_mkdir(r, "existing/directory/newdir")
 #'
 #' }
-wd_mkdir <- function(req, folder) {
+wd_mkdir <- function(req, directory) {
   resp <- req |>
     httr2::req_method("MKCOL") |>
-    httr2::req_url_path_append(utils::URLencode(folder)) |>
+    httr2::req_url_path_append(utils::URLencode(directory)) |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
   if (httr2::resp_is_error(resp)) {
@@ -226,36 +228,37 @@ wd_mkdir <- function(req, folder) {
 
 #' Lists the content of a WebDAV directory
 #'
-#' @param req request handle
-#' @param folder folder path
+#' @param req request handle obtained from \code{\link{wd_connect}}
+#' @param directory directory path
 #' @param full_names if TRUE, the directory path is prepended to the file names
-#'   to give a relative file path
-#' @param as_df outputs a data.frame with file information
+#'   to give a relative file path (relevant only if as_df is FALSE)
+#' @param as_df if TRUE outputs a data.frame with file information
 #'
-#' @return a vector of filenames or a dataframe
+#' @return a vector of filenames or a dataframe (when as_df is TRUE) with
+#'   detailed file information (filename, path, isdir, size, lastmodified)
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #'
-#' # lists names of files and folders in the main directory
+#' # lists names of files and directories in the main directory
 #' wd_dir(r)
 #'
-#' # lists names of files and folders in the subfolder "myfolder"
-#' wd_dir(r, "myfolder")
+#' # lists names of files and directories in the subdirectory "mydirectory"
+#' wd_dir(r, "mydirectory")
 #'
-#' # lists names of files and folders with the relative path
-#' wd_dir(r, "myfolder", full_names=TRUE)
+#' # lists names of files and directories with the relative path
+#' wd_dir(r, "mydirectory", full_names=TRUE)
 #'
 #' # returns a data.frame with the columns filename, size and isdir (whether
 #' # it's a directory or file
-#' wd_dir(r, "myfolder", as_df=TRUE)
+#' wd_dir(r, "mydirectory", as_df=TRUE)
 #'
 #' }
-wd_dir <- function(req, folder = "", full_names = FALSE, as_df = FALSE) {
+wd_dir <- function(req, directory = "", full_names = FALSE, as_df = FALSE) {
 
   resp <- req |>
-    httr2::req_url_path_append(utils::URLencode(folder)) |>
+    httr2::req_url_path_append(utils::URLencode(directory)) |>
     httr2::req_method("PROPFIND") |>
     httr2::req_headers(
       Depth = "1"
@@ -272,10 +275,11 @@ wd_dir <- function(req, folder = "", full_names = FALSE, as_df = FALSE) {
     rs <- xml2::xml_find_all(dr, "//d:response", ns)
 
     href <- sapply(rs,
-                   \(x) {
-                     xml2::xml_find_first(x, "d:href", ns) |>
-                       xml2::xml_text()
-                   })
+      \(x) {
+        xml2::xml_find_first(x, "d:href", ns) |>
+          xml2::xml_text()
+      }
+    )
     dpath <- httr2::url_parse(req$url)$path
     path <- substring(utils::URLdecode(href), nchar(dpath) + 1)
 
@@ -286,30 +290,31 @@ wd_dir <- function(req, folder = "", full_names = FALSE, as_df = FALSE) {
       ps <- xml2::xml_find_all(dr, "//d:response/d:propstat/d:prop", ns)
 
       isdir <- sapply(ps,
-                      \(x) {
-                        xml2::xml_find_first(x,
-                                             "d:resourcetype/d:collection",
-                                             ns) |>
-                          length() > 0
-                      })
+        \(x) {
+          xml2::xml_find_first(x, "d:resourcetype/d:collection", ns) |>
+            length() > 0
+        }
+      )
       lastmodified <- sapply(ps,
-                             \(x) {
-                               xml2::xml_find_first(x,
-                                                    "d:getlastmodified",
-                                                    ns) |>
-                                 xml2::xml_text()})
+        \(x) {
+          xml2::xml_find_first(x, "d:getlastmodified", ns) |>
+            xml2::xml_text()
+        }
+      )
       lastmodified <- substr(lastmodified, 6, nchar(lastmodified)) |>
         as.POSIXct(format = "%e %b %Y %H:%M:%S GMT", tz = "GMT")
       contenttype <- sapply(ps,
-                            \(x) {
-                              xml2::xml_find_first(x, "d:getcontenttype", ns) |>
-                                xml2::xml_text()
-                            })
+        \(x) {
+          xml2::xml_find_first(x, "d:getcontenttype", ns) |>
+            xml2::xml_text()
+        }
+      )
       size <- sapply(ps,
-                     \(x) {
-                       xml2::xml_find_first(x, "d:getcontentlength", ns) |>
-                         xml2::xml_text()
-                     })
+        \(x) {
+          xml2::xml_find_first(x, "d:getcontentlength", ns) |>
+            xml2::xml_text()
+        }
+      )
 
       df <- data.frame(
         file,
@@ -335,26 +340,26 @@ wd_dir <- function(req, folder = "", full_names = FALSE, as_df = FALSE) {
   }
 }
 
-#' Checks if the resource on WebDAV is a folder
+#' Checks if the resource on WebDAV is a directory
 #'
-#' @param req request handle
-#' @param folder path to folder
-#' @param silent if FALSE a warning is given if the folder does not exists
+#' @param req request handle obtained from \code{\link{wd_connect}}
+#' @param directory path to directory
+#' @param silent if FALSE a warning is given if the directory does not exists
 #'
-#' @return TRUE if it is a folder, FALSE else
+#' @return TRUE if it is a directory, FALSE else
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #'
 #' wd_isdir(r, "testfile.R") # FALSE
-#' wd_isdir(r, "myfolder")   # TRUE
+#' wd_isdir(r, "mydirectory")   # TRUE
 #'
 #' }
-wd_isdir <- function(req, folder, silent = FALSE) {
+wd_isdir <- function(req, directory, silent = FALSE) {
 
   resp <- req |>
-    httr2::req_url_path_append(utils::URLencode(folder)) |>
+    httr2::req_url_path_append(utils::URLencode(directory)) |>
     httr2::req_method("PROPFIND") |>
     httr2::req_headers(
       Depth = "0",
@@ -376,20 +381,29 @@ wd_isdir <- function(req, folder, silent = FALSE) {
       xml2::as_xml_document() |>
       xml2::xml_find_first(
         "//d:response/d:propstat/d:prop/d:resourcetype/d:collection",
-        ns) |>
+        ns
+      ) |>
       length()
     dr[1] > 0
 
   }
 }
 
-#' Uploads a file or folder to WebDAV
+#' Uploads a file or directory to WebDAV
 #'
-#' @param req request handle
-#' @param source local file or folder
-#' @param target remote file or foldername
+#' Directories are uploaded recursively.
+#' If the source is a file and the target a directory, then the file is uploaded
+#' into the directory.
+#' If the target is omitted, then the file or directory name
+#' (\code{\link[base]{basename}}) will be used.
 #'
-#' @return vector of uploaded files
+#' @param req request handle obtained from \code{\link{wd_connect}}
+#' @param source path to local file or directory
+#' @param target path to remote file or directory, if omitted the file or
+#'   directory name will be used, if source is a file and target a directory
+#'   then the file will be put into the target directory
+#'
+#' @return vector of uploaded files (invisibly)
 #' @export
 #'
 #' @examples
@@ -397,6 +411,7 @@ wd_isdir <- function(req, folder, silent = FALSE) {
 #'
 #' wd_upload(r, "d:/data/weather", "weatherfiles")
 #' wd_upload(r, "d:/data/abc.txt", "test/xyz.txt")
+#' wd_upload(r, "d:/data/abc.txt", "test") # uploaded file will be test/abc.txt
 #'
 #' }
 wd_upload <- function(req, source, target = "") {
@@ -430,13 +445,21 @@ wd_upload <- function(req, source, target = "") {
   }
 }
 
-#' Fetches a file or folder (recursively) from the WebDAV server
+#' Fetches a file or directory (recursively) from the WebDAV server
 #'
-#' @param req request handle
-#' @param source source file or folder on server
-#' @param target local target folder
+#' Directories are downloaded recursively.
+#' If the source is a file and the target a directory, then the file is
+#' downloaded to the target directory.
+#' If the target is omitted, then the file or directory name
+#' (\code{\link[base]{basename}}) will be used.
 #'
-#' @return vector of downloaded files
+#' @param req request handle obtained from \code{\link{wd_connect}}
+#' @param source path to source file or directory on server
+#' @param target path to local target file or directory, if omitted the file or
+#'   directory name will be used, if source is a file and target a directory
+#'   then the file will be put into the target directory
+#'
+#' @return vector of downloaded files (invisibly)
 #' @export
 #'
 #' @examples

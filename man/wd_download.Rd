@@ -2,22 +2,28 @@
 % Please edit documentation in R/webdav.R
 \name{wd_download}
 \alias{wd_download}
-\title{Fetches a file or folder (recursively) from the WebDAV server}
+\title{Fetches a file or directory (recursively) from the WebDAV server}
 \usage{
 wd_download(req, source, target = "")
 }
 \arguments{
-\item{req}{request handle}
+\item{req}{request handle obtained from \code{\link{wd_connect}}}
 
-\item{source}{source file or folder on server}
+\item{source}{path to source file or directory on server}
 
-\item{target}{local target folder}
+\item{target}{path to local target file or directory, if omitted the file or
+directory name will be used, if source is a file and target a directory
+then the file will be put into the target directory}
 }
 \value{
-vector of downloaded files
+vector of downloaded files (invisibly)
 }
 \description{
-Fetches a file or folder (recursively) from the WebDAV server
+Directories are downloaded recursively.
+If the source is a file and the target a directory, then the file is
+downloaded to the target directory.
+If the target is omitted, then the file or directory name
+(\code{\link[base]{basename}}) will be used.
 }
 \examples{
 \dontrun{

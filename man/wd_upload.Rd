@@ -2,28 +2,35 @@
 % Please edit documentation in R/webdav.R
 \name{wd_upload}
 \alias{wd_upload}
-\title{Uploads a file or folder to WebDAV}
+\title{Uploads a file or directory to WebDAV}
 \usage{
 wd_upload(req, source, target = "")
 }
 \arguments{
-\item{req}{request handle}
+\item{req}{request handle obtained from \code{\link{wd_connect}}}
 
-\item{source}{local file or folder}
+\item{source}{path to local file or directory}
 
-\item{target}{remote file or foldername}
+\item{target}{path to remote file or directory, if omitted the file or
+directory name will be used, if source is a file and target a directory
+then the file will be put into the target directory}
 }
 \value{
-vector of uploaded files
+vector of uploaded files (invisibly)
 }
 \description{
-Uploads a file or folder to WebDAV
+Directories are uploaded recursively.
+If the source is a file and the target a directory, then the file is uploaded
+into the directory.
+If the target is omitted, then the file or directory name
+(\code{\link[base]{basename}}) will be used.
 }
 \examples{
 \dontrun{
 
 wd_upload(r, "d:/data/weather", "weatherfiles")
 wd_upload(r, "d:/data/abc.txt", "test/xyz.txt")
+wd_upload(r, "d:/data/abc.txt", "test") # uploaded file will be test/abc.txt
 
 }
 }

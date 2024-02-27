@@ -3,7 +3,7 @@
 [![R-CMD-check](https://github.com/gk-crop/rdav/actions/workflows/r.yml/badge.svg)](https://github.com/gk-crop/rdav/actions/workflows/r.yml)
 <!-- badges: end -->
 
-# Simple package to interact with a webdav server
+# Simple WebDAV client
 
 Provides some functions to 
 

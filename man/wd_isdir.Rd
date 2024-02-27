@@ -2,28 +2,28 @@
 % Please edit documentation in R/webdav.R
 \name{wd_isdir}
 \alias{wd_isdir}
-\title{Checks if the resource on WebDAV is a folder}
+\title{Checks if the resource on WebDAV is a directory}
 \usage{
-wd_isdir(req, folder, silent = FALSE)
+wd_isdir(req, directory, silent = FALSE)
 }
 \arguments{
-\item{req}{request handle}
+\item{req}{request handle obtained from \code{\link{wd_connect}}}
 
-\item{folder}{path to folder}
+\item{directory}{path to directory}
 
-\item{silent}{if FALSE a warning is given if the folder does not exists}
+\item{silent}{if FALSE a warning is given if the directory does not exists}
 }
 \value{
-TRUE if it is a folder, FALSE else
+TRUE if it is a directory, FALSE else
 }
 \description{
-Checks if the resource on WebDAV is a folder
+Checks if the resource on WebDAV is a directory
 }
 \examples{
 \dontrun{
 
 wd_isdir(r, "testfile.R") # FALSE
-wd_isdir(r, "myfolder")   # TRUE
+wd_isdir(r, "mydirectory")   # TRUE
 
 }
 }

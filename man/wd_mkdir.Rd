@@ -4,18 +4,18 @@
 \alias{wd_mkdir}
 \title{Creates a directory (collection) on WebDAV server}
 \usage{
-wd_mkdir(req, folder)
+wd_mkdir(req, directory)
 }
 \arguments{
-\item{req}{request handle}
+\item{req}{request handle obtained from \code{\link{wd_connect}}}
 
-\item{folder}{folder path on server}
+\item{directory}{directory path on server}
 }
 \value{
-@return invisibly true on success or false on failure
+TRUE on success, FALSE on failure (invisibly)
 }
 \description{
-When create a nested directory, all parent directories have to exist on the
+When creating a subdirectoy, all parent directories have to exist on the
 server.
 }
 \examples{

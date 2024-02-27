@@ -2,24 +2,24 @@
 % Please edit documentation in R/webdav.R
 \name{wd_copy}
 \alias{wd_copy}
-\title{Copies a file or folder on the WebDAV server}
+\title{Copies a file or directory on the WebDAV server}
 \usage{
 wd_copy(req, source, target, overwrite = TRUE)
 }
 \arguments{
-\item{req}{request handle}
+\item{req}{request handle obtained from \code{\link{wd_connect}}}
 
-\item{source}{path of the source on server}
+\item{source}{path of the source on the server}
 
-\item{target}{target path on the server}
+\item{target}{path of the target on the server}
 
-\item{overwrite}{overwrites files (default)}
+\item{overwrite}{overwrites files when TRUE (default)}
 }
 \value{
-invisibly true on success or false on failure
+TRUE on success, FALSE on failure (invisibly)
 }
 \description{
-Copies a file or folder on the WebDAV server
+Copies a file or directory on the WebDAV server
 }
 \examples{
 \dontrun{
