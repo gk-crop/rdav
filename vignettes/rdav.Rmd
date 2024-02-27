@@ -1,0 +1,236 @@
+---
+title: "rdav"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{rdav}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(rdav)
+```
+
+# 'rdav' - Simple WebDAV client to upload and download data
+
+## A first example
+
+- Load Data from a WebDAV server,
+- read the downloaded file, 
+- create a plot from the data,
+- save the plot as image and
+- upload the image to the server.
+
+```{r eval=FALSE}
+library(rdav)
+
+r <- wd_connect("https://cloud.example.com/remote.php/webdav/", "myusername")
+
+wd_download(r, "data/data.csv", "localdata/data.csv")
+data <- read.table("localdata/data.csv")
+
+png("data_plot.png")
+plot(data)
+dev.off()
+
+wd_upload(r, "data_plot.png", "data_plot.png")
+
+```
+
+
+## WebDAV, OwnCloud, NextCloud
+
+The WebDAV protocol provides a framework to create, change and move documents on a server. 
+Many cloud based storage systems provide WebDAV access, e.g. systems based on OwnCloud or NextCloud. This includes many cloud services offered by universities, organisations companies as well as many self hosted clouds on NAS or Raspberry Pi.
+
+To access WebDAV one typically needs the URL to the WebDAV server, an username and a password. There is also the possibility to share data via public links without password protection.
+
+Accounts on an OwnCloud or Nextcloud based server are typically addressed by WebDAV via the URL: 
+`https://cloud.example.com/remote.php/webdav/`.
+
+When sharing data via a public link from those servers, the link is typically of the form  
+`https://cloud.example.com/s/yxcFKRWBJqYYzp4/`  
+and will be used to access the files via a web browser.
+To access a public share via WebDAV, one has to use the URL:  
+`https://cloud.example.com/public.php/webdav/`  
+As username one has to use the share token, i. e. the cryptic number and letter string of the share link following `/s/` - in the example above the username would be `yxcFKRWBJqYYzp4`.
+
+
+
+## Using the package functions
+
+
+### Establishing the connection
+
+To interact with the WebDAV server, you have to create a connection via `wd_connect` by supplying the URL, username and password. 
+
+In an interactive R session, you may omit the password when calling `wd_connect`. Then R will ask you to type the password.
+
+```{r eval=FALSE}
+# no password given, R will ask.
+r <- wd_connect(url = "https://cloud.example.com/remote.php/webdav/",
+                username = "myusername")
+```
+
+
+
+When using WebDAV in a script, you have to pass the password to `wd_connect`. 
+It is not good practice, to write the password literally in your script 
+
+```{r eval=FALSE}
+# Don"t do this! You would reveal your super secret password to others when
+# sharing your script.
+r <- wd_connect(url = "https://cloud.example.com/remote.php/webdav/",
+                username = "myusername",
+                password = "12345")
+```
+
+Better use your system"s credential store (i. e. the password will be stored
+encrypted in your user account). You may use the package [`keyring`](https://cran.r-project.org/package=keyring) to access the system"s 
+credential store.
+
+You once have to set a key / password combination on your computer by calling:
+
+```{r, eval=FALSE}
+keyring::key_set("mycloud", "myusername")
+```
+
+You will be asked for the password and then the credentials are stored on your 
+system.
+
+In your scripts you can then use `keyring::get_key("mycloud","myusername")` to
+pass the stored password to `wd_connect`:
+
+```{r, eval=FALSE}
+r <- wd_connect(url = "https://cloud.example.com/remote.php/webdav/",
+                username = "myusername",
+                password = keyring::get_key("mycloud", "myusername"))
+```
+
+
+### Downloading and uploading data
+
+To download a file, you have to give the path of the filename on the server,
+as well as the path to the location where you want to store the file on your
+computer.
+
+```{r, eval=FALSE}
+wd_download(r, "data/data.csv", "localdata/data_new.csv")
+```
+
+Instead of giving the full path of the target file, you can use only the 
+directory name. Then the file will be stored in that folder with the same name
+as it has on the server.
+
+```{r, eval=FALSE}
+wd_download(r, "data/data.csv", "localdata")
+```
+
+You can download full directories. All the data within the directory, including
+subdirectories will be downloaded.
+
+
+```{r, eval=FALSE}
+wd_download(r, "data", "localdata")
+```
+
+For uploading data from your computer, you have to use `wd_upload` in a similar 
+way as `wd_download`:
+
+```{r, eval=FALSE}
+wd_upload(r, "localdata/data.csv", "data/data_new.csv")
+wd_upload(r, "localdata/data.csv", "data")
+wd_upload(r, "localdata", "data")
+```
+
+Notice: 
+
+- If you upload / download files into a directory, the target directory has 
+to exist already. 
+- If you upload / download a directory, then the target directory will be created,
+if it does not exist. However, the parent directory have to exist already
+
+## Copy, move, delete files on the server
+
+You can copy, move, delete files or directory on the server and create new 
+directories. 
+
+By default existing files will be overwritten when using copy and move operation,
+unless you specify the parameter `overwrite=FALSE`. Notice: Some WebDAV servers 
+may behave differently and won't overwrite files. In these case you have to delete
+files first.
+
+```{r, eval=FALSE}
+wd_copy(r, "actual.csv", "backup.csv")
+wd_move(r, "backup.csv", "backup-2024-02-27.csv")
+wd_move(r, "backup.csv", "backup-2024-02-27.csv", overwrite = FALSE)
+wd_delete(r, "obsolete.csv")
+```
+You can create new directories. 
+
+```{r, eval=FALSE}
+wd_mkdir(r, "data/soil/new")
+```
+Notice that parent directories have to exist. If not, you have to create them first
+
+```{r, eval=FALSE}
+wd_mkdir(r, "data/soil")
+wd_mkdir(r, "data/soil/new")
+```
+
+## Security considerations
+
+Here some thougths, how to better protect the data, if there is some risk that
+your password get's disclosed by using it within scripts.
+
+
+### Don't put passwords in your code
+
+You should avoid putting passwords in your code. See the example in the
+sections above how to use system credential store.
+
+
+### Use application passwords instead of account passwords
+
+Some cloud services offer you the possibility to create additional application 
+passwords. If you use an application password with `rdav`, and the password
+gets somehow disclosed, you can just delete the application password and
+create a new one. You don't have to change then your account's password.
+
+
+### Use password protected public shares instead direct account
+
+Instead accessing the full account, you may create a subfolder and share it 
+via a public link, adding a password. You can give the share full read / write and
+edit rights, so you can manage the content of the folder as you were logged in
+with your main account.
+
+If someone gets access to your share, only the data in this folder can then be
+manipulated.
+
+
+### When sharing data, use different shares for writing and reading
+
+If you want to share data with other people, create public shares. Don't give
+them your account credentials.
+
+You may create separated shares for reading and writing data if appropriate. 
+
+- make a folder `your_upload` and create a write-only share to receive data from
+other users
+- make a folder `your_download` and create a read-only share to make data 
+available to other users
+
+Then you can check the uploaded files and move them to the download folder, or 
+process uploaded files and save results you want to share to the download folder.
+
+This will prevent that someone who gained access to the share to distribute
+illegal content. Even if illegal content might then get uploaded, no one else
+can download it.

@@ -1,3 +1,7 @@
+Version 0.0.7
+* added vignette
+* improved documentation
+
 Version 0.0.6
 * handle special chars in filenames
 * minor improvements

@@ -11,5 +11,8 @@
 /vignettes/log
 doc
 Meta
-/doc/
 /Meta/
+inst/doc
+/vignettes/*.html
+/vignettes/*.R
+/doc/

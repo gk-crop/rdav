@@ -1,8 +1,8 @@
 Package: rdav
 Type: Package
 Title: Simple 'WebDAV' Client
-Version: 0.0.6
-Date: 2024-02-26
+Version: 0.0.7
+Date: 2024-02-27
 Author: Gunther Krauss
 Maintainer: Gunther Krauss <guntherkrauss@uni-bonn.de>
 Description: A simple 'WebDAV' client that provides functions to fetch and send 
@@ -15,6 +15,10 @@ Imports:
   utils,
   httr2,
   xml2
-Suggests: keyring
+Suggests: 
+    keyring,
+    knitr,
+    rmarkdown
 Encoding: UTF-8
 RoxygenNote: 7.3.1
+VignetteBuilder: knitr
