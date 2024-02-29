@@ -260,6 +260,7 @@ wd_dir <- function(req, directory = "", full_names = FALSE, as_df = FALSE) {
   resp <- req |>
     httr2::req_url_path_append(utils::URLencode(directory)) |>
     httr2::req_method("PROPFIND") |>
+    httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_headers(
       Depth = "1"
     )  |>
