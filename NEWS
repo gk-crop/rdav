@@ -1,3 +1,7 @@
+Version 0.0.8
+* check for NULL path
+* added unit tests (testthat) with mock responses
+
 Version 0.0.7
 * added vignette
 * improved documentation

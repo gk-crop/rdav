@@ -281,6 +281,9 @@ wd_dir <- function(req, directory = "", full_names = FALSE, as_df = FALSE) {
       }
     )
     dpath <- httr2::url_parse(req$url)$path
+    if(is.null(dpath)) {
+      dpath <- "/"
+    }
     path <- substring(utils::URLdecode(href), nchar(dpath) + 1)
 
 
