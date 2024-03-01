@@ -3,7 +3,7 @@
 [![R-CMD-check](https://github.com/gk-crop/rdav/actions/workflows/r.yml/badge.svg)](https://github.com/gk-crop/rdav/actions/workflows/r.yml)
 <!-- badges: end -->
 
-# Simple WebDAV client
+# Simple WebDAV client <img src="man/figures/logo.svg" align="right" height="139" />
 
 Provides some functions to 
 
