@@ -1,3 +1,6 @@
+Version 0.0.9
+* small fix in wd_upload (avoid creating nested dir)
+
 Version 0.0.8
 * check for NULL path
 * added unit tests (testthat) with mock responses

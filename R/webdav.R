@@ -422,7 +422,7 @@ wd_upload <- function(req, source, target = "") {
   if (target == "") {
     target <- basename(source)
   }
-  if (file.exists(source) && wd_isdir(req, target, silent = TRUE)) {
+  if (file.exists(source) && !dir.exists(source) && wd_isdir(req, target, silent = TRUE)) {
     target <- paste0(target, "/", basename(source))
   }
   if (dir.exists(source)) {
