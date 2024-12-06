@@ -4,10 +4,10 @@ mock_isdir <- function(req) {
   } else {
     if (req$url == "https://cloud.example.com/test") {
       httr2::response(status_code = 207,
-                      header = list("Content-Type" = "application/xml"),
+                      headers = list("Content-Type" = "application/xml"),
                       body = '<?xml version="1.0"?>
-<d:multistatus xmlns:d="DAV:" 
-  xmlns:s="http://sabredav.org/ns" 
+<d:multistatus xmlns:d="DAV:"
+  xmlns:s="http://sabredav.org/ns"
   xmlns:oc="http://owncloud.org/ns">
   <d:response>
     <d:href>/test/</d:href>
@@ -19,10 +19,10 @@ mock_isdir <- function(req) {
 </d:multistatus>')
     } else if (req$url == "https://cloud.example.com/file.txt") {
       httr2::response(status_code = 207,
-                      header = list("Content-Type" = "application/xml"),
+                      headers = list("Content-Type" = "application/xml"),
                       body = '<?xml version="1.0"?>
-<d:multistatus xmlns:d="DAV:" 
-  xmlns:s="http://sabredav.org/ns" 
+<d:multistatus xmlns:d="DAV:"
+  xmlns:s="http://sabredav.org/ns"
   xmlns:oc="http://owncloud.org/ns">
   <d:response>
     <d:href>/file.txt</d:href>

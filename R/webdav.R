@@ -213,17 +213,23 @@ wd_delete <- function(req, file) {
 #'
 #' }
 wd_mkdir <- function(req, directory) {
-  resp <- req |>
-    httr2::req_method("MKCOL") |>
-    httr2::req_url_path_append(utils::URLencode(directory)) |>
-    httr2::req_error(is_error = \(x) FALSE) |>
-    httr2::req_perform()
-  if (httr2::resp_is_error(resp)) {
-    warning(httr2::resp_status_desc(resp))
-    invisible(FALSE)
-  } else {
+  if(!wd_isdir(req, directory, TRUE)) {
+    resp <- req |>
+      httr2::req_method("MKCOL") |>
+      httr2::req_url_path_append(utils::URLencode(directory)) |>
+      httr2::req_error(is_error = \(x) FALSE) |>
+      httr2::req_perform()
+    if (httr2::resp_is_error(resp)) {
+      warning(httr2::resp_status_desc(resp))
+      invisible(FALSE)
+    } else {
+      invisible(TRUE)
+    }
+  }
+  else {
     invisible(TRUE)
   }
+
 }
 
 #' Lists the content of a WebDAV directory
