@@ -1,6 +1,6 @@
 mock_upload <- function(req) {
   if (req$method == "MKCOL") {
-    httr2::response(body = 200)
+    httr2::response(status_code = 200)
   } else if (req$method == "PUT") {
     if (req$url == "https://cloud.example.com/missing") {
       httr2::response(status_code = 404)
@@ -11,7 +11,7 @@ mock_upload <- function(req) {
     if (req$url == "https://cloud.example.com/test") {
       httr2::response(status_code = 207,
                       header = list("Content-Type" = "application/xml"),
-                      body = '<?xml version="1.0"?>
+                      body = charToRaw('<?xml version="1.0"?>
 <d:multistatus xmlns:d="DAV:" 
   xmlns:s="http://sabredav.org/ns" 
   xmlns:oc="http://owncloud.org/ns">
@@ -22,11 +22,11 @@ mock_upload <- function(req) {
       <d:status>HTTP/1.1 200 OK</d:status>
     </d:propstat>
   </d:response>
-</d:multistatus>')
+</d:multistatus>'))
     } else if (req$url == "https://cloud.example.com/file.txt") {
       httr2::response(status_code = 207,
                       header = list("Content-Type" = "application/xml"),
-                      body = '<?xml version="1.0"?>
+                      body = charToRaw('<?xml version="1.0"?>
 <d:multistatus xmlns:d="DAV:" 
   xmlns:s="http://sabredav.org/ns" 
   xmlns:oc="http://owncloud.org/ns">
@@ -37,7 +37,7 @@ mock_upload <- function(req) {
       <d:status>HTTP/1.1 200 OK</d:status>
     </d:propstat>
   </d:response>
-</d:multistatus>')
+</d:multistatus>'))
     } else {
       httr2::response(status_code = 404)
     }

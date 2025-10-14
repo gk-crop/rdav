@@ -5,7 +5,7 @@ mock_dir <- function(req) {
     if (req$url == "https://cloud.example.com/test") {
       httr2::response(status_code = 207,
                       header = list("Content-Type" = "application/xml"),
-                      body = '<?xml version="1.0"?>
+                      body = charToRaw('<?xml version="1.0"?>
 <d:multistatus xmlns:d="DAV:" 
   xmlns:s="http://sabredav.org/ns" 
   xmlns:oc="http://owncloud.org/ns">
@@ -57,13 +57,13 @@ mock_dir <- function(req) {
       <d:status>HTTP/1.1 200 OK</d:status>
     </d:propstat>
   </d:response>
-</d:multistatus>')
+</d:multistatus>'))
     } else if (
                req$url == "https://cloud.example.com/file.txt" ||
                  req$url == "https://cloud.example.com/") {
       httr2::response(status_code = 207,
                       header = list("Content-Type" = "application/xml"),
-                      body = '<?xml version="1.0"?>
+                      body = charToRaw('<?xml version="1.0"?>
 <d:multistatus xmlns:d="DAV:" 
   xmlns:s="http://sabredav.org/ns" 
   xmlns:oc="http://owncloud.org/ns">
@@ -79,7 +79,7 @@ mock_dir <- function(req) {
       <d:status>HTTP/1.1 200 OK</d:status>
     </d:propstat>
   </d:response>
-</d:multistatus>')
+</d:multistatus>'))
     } else {
       httr2::response(status_code = 404)
     }
