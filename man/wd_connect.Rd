@@ -36,7 +36,7 @@ r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
 keyring::key_set("mydav", "exampleuser") # call only once
 
 r <- wd_connect("https://example.com/remote.php/webdav/",
-                "exampleuser"
+                "exampleuser",
                 keyring::key_get("mydav", "exampleuser"))
 }
 }
