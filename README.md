@@ -1,4 +1,5 @@
 <!-- badges: start -->
+[![CRAN](https://www.r-pkg.org/badges/version/rdav)](https://cran.r-project.org/package=rdav)
 [![rdav status badge](https://gk-crop.r-universe.dev/badges/rdav)](https://gk-crop.r-universe.dev/rdav)
 [![R-CMD-check](https://github.com/gk-crop/rdav/actions/workflows/r.yml/badge.svg)](https://github.com/gk-crop/rdav/actions/workflows/r.yml)
 <!-- badges: end -->
@@ -17,7 +18,12 @@ warnings.
 
 ## Installation
 
-You can install the package from r-universe.dev
+To install the stable version from CRAN please use
+```
+install.packates('rdav')
+```
+
+You can install the most recent development version from r-universe.dev
 
 ```
 install.packages('rdav', 
@@ -31,7 +37,7 @@ call wd_connect, you will be prompted for the password.
 
 ```
 library(rdav)
-r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
+r <- wd_connect("https://example.com/remote.php/dav/files/user", "user")
 
 wd_dir(r) # lists the main directory
 wd_dir(r, "subdir", as_df = TRUE) # lists 'subdir', returns a dataframe
@@ -44,6 +50,11 @@ Create folder, upload and download data
 wd_mkdir(r,"myfolder")
 wd_upload(r, "testfile.R", "myfolder/testfile.R")
 wd_download(r, "myfolder", "d:/data/fromserver")
+```
 
+Share files via public link or e-mail
 
+```
+ocs_create_share_link(r, "myfolder")
+ocs_create_share_mail(r, "myfolder", "mail@example.com")
 ```

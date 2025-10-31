@@ -6,12 +6,12 @@ webdav_mock_response_connect <- function(req) {
     if (req$url != "https://cloud.example.com") {
       httr2::response(status_code = 404)
     } else {
-      # if (req$headers$Authorization != "Basic YWJjOjEyMw==") {
-      #   httr2::response(status_code = 401)
-      # } else {
-      #   httr2::response(status_code = 200)
-      # }
-      httr2::response(status_code = 200)
+      h <- httr2::req_get_headers(req, redacted = "reveal")
+      if (h$Authorization != "Basic YWJjOjEyMw==") {
+        httr2::response(status_code = 401)
+      } else {
+        httr2::response(status_code = 200)
+      }
     }
   }
 }
@@ -27,7 +27,7 @@ test_that("connection works", {
   expect_equal(httr2::resp_status(resp), 200)
 })
 
-test_that("url is changed", {
+test_that("url wrong", {
   expect_error(
     httr2::with_mocked_responses(
       webdav_mock_response_connect,
@@ -39,14 +39,14 @@ test_that("url is changed", {
   )
 })
 
-# test_that("credential are changed", {
-#   expect_error(resp <- httr2::with_mocked_responses(
-#     webdav_mock_response_connect,
-#     wd_connect("https://cloud.example.com", "abc", "1234") |>
-#       httr2::req_method("HEAD") |>
-#       httr2::req_error(is_error = \(e) FALSE) |>
-#       httr2::req_perform()
-#   ),
-#   "Unauthorized"
-#   )
-# })
+test_that("credentials are wrong", {
+  expect_error(resp <- httr2::with_mocked_responses(
+    webdav_mock_response_connect,
+    wd_connect("https://cloud.example.com", "abc", "1234") |>
+      httr2::req_method("HEAD") |>
+      httr2::req_error(is_error = \(e) FALSE) |>
+      httr2::req_perform()
+  ),
+  "Unauthorized"
+  )
+})

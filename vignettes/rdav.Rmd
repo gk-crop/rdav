@@ -211,9 +211,63 @@ wd_dir(r, "example", as_df = TRUE)
 ```
 
 
+# Additional features for Nextcloud based WebDAV servers
+
+## Handling base and share URLs 
+
+Base WebDAV entry point URLs for Nextcloud based servers are of the 
+form `<hostname>/<optional_subfolder>/remote.php/dav/files/<username>`. 
+Public share URLs of are of the form `<hostname>/<optional_subfolder>/s/<token>`
+where the token is used as username for authentication. The WebDAV entry point
+for public shares is of the form `<hostname>/<optional_subfolder>/public.php/dav/files/<username>`.
+The package provides some functions to deal with these URLs:
 
 
+* `ncl_baseurl(hostname, username)` creates the base url from host and user name.
+* `ncl_shareurl(hostname, username)` creates the base url for public shares from host and username (token).
+* `ncl_shareurl_from_publicurl(url)` creates the base url for public shares from the public share url.
+* `ncl_username_from_from_url` extracts the username  from the base urls.
 
+This simplifies the connection to Nextcloud based servers:
+
+```{r, eval=FALSE}
+url <- ncl_baseurl("example.com", "johndoe")
+r <- wd_connect(url)
+
+shareurl <- ncl_shareurl_from_publicurl("https://example.com/s/aXaejfaheDde")
+rs <- wd_connect(shareurl)
+
+```
+
+
+## Managing shares
+
+On Nextcloud based servers one can manage shares via the [OCS API](https://docs.nextcloud.com/server/stable/developer_manual/client_apis/OCS/ocs-api-overview.html).
+
+The package provides functions for
+
+* getting infos about shares
+* create, modify and delete shares
+
+```{r, eval=FALSE}
+r <- wd_connect(url)
+
+# list all shares
+ocs_child_shares(r)
+
+# list the shares of a specific file or folder
+ocs_shares(r, "folder_to_share")
+
+# create an e-mail share
+sh <- ocs_create_share_mail(r, "folder_to_share", "jackdoe@example.com")
+
+# modify the share by adding a password and notifying the user
+ocs_modify_share(r, sh$id, password = "super_secret")
+ocs_send_mail(r, sh$id, password = "super_secret")
+
+# delete the share
+ocs_delete_share(r, sh$id)
+```
 
 
 # Security considerations

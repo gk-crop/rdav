@@ -1,8 +1,8 @@
 Package: rdav
 Type: Package
 Title: Simple 'WebDAV' Client
-Version: 0.1.3
-Date: 2025-10-20
+Version: 0.2.0
+Date: 2025-10-31
 Authors@R: person(given = "Gunther",
                     family = "Krauss",
                     role = c("aut", "cre"),
@@ -19,8 +19,7 @@ BugReports: https://github.com/gk-crop/rdav/issues
 Depends:
   R (>= 4.1.0)
 Imports:
-  utils,
-  httr2,
+  httr2 (>= 1.2.0),
   xml2
 Suggests: 
     keyring,

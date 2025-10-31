@@ -1,3 +1,9 @@
+Version 0.2.0
+* fix path escaping due to a change in httr2 package
+* depends now on httr2 >= 1.2.0
+* adds functions to handle urls for Nextcloud based servers
+* adds functions to manage shares for Nextcloud based servers (OCS Api)
+
 Version 0.1.3
 * fixed error in example
 * added link to WebDAV protocol (RFC 4918)

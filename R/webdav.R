@@ -58,7 +58,7 @@ ns <- c(
 #' or use for example the system credential store via keyring package.
 #'
 #' @param url url of the WebDAV directory
-#' @param username username
+#' @param username username - if not given, it will be derived from the url
 #' @param password password - if not given, you will be asked for it
 #'
 #' @return a httr2 request to the WebDAV server location
@@ -80,7 +80,8 @@ ns <- c(
 #' }
 
 
-wd_connect <- function(url, username, password = NULL) {
+wd_connect <- function(url, 
+                       username = ncl_username_from_url(url), password = NULL) {
   req <- httr2::request(url) |>
     httr2::req_auth_basic(username, password)
   resp <- req |>
@@ -112,12 +113,13 @@ wd_connect <- function(url, username, password = NULL) {
 #' }
 
 wd_copy <- function(req, source, target, overwrite = TRUE) {
+  desturl <- httr2::req_url_path_append(req, target)$url
   resp <- req |>
-    httr2::req_url_path_append(utils::URLencode(source)) |>
+    httr2::req_url_path_append((source)) |>
     httr2::req_method("COPY") |>
     httr2::req_headers(
       Overwrite = ifelse(overwrite, "T", "F"),
-      Destination = paste0(req$url, utils::URLencode(target))
+      Destination = desturl
     )  |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
@@ -147,12 +149,13 @@ wd_copy <- function(req, source, target, overwrite = TRUE) {
 #'
 #' }
 wd_move <- function(req, source, target, overwrite = TRUE) {
+  desturl <- httr2::req_url_path_append(req, target)$url
   resp <- req |>
-    httr2::req_url_path_append(utils::URLencode(source)) |>
+    httr2::req_url_path_append((source)) |>
     httr2::req_method("MOVE") |>
     httr2::req_headers(
       Overwrite = ifelse(overwrite, "T", "F"),
-      Destination = paste0(req$url, utils::URLencode(target))
+      Destination = desturl
     )  |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
@@ -183,7 +186,7 @@ wd_move <- function(req, source, target, overwrite = TRUE) {
 wd_delete <- function(req, file) {
   resp <- req |>
     httr2::req_method("DELETE") |>
-    httr2::req_url_path_append(utils::URLencode(file)) |>
+    httr2::req_url_path_append((file)) |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_perform()
   if (httr2::resp_is_error(resp)) {
@@ -213,10 +216,10 @@ wd_delete <- function(req, file) {
 #'
 #' }
 wd_mkdir <- function(req, directory) {
-  if(!wd_isdir(req, directory, TRUE)) {
+  if (!wd_isdir(req, directory, TRUE)) {
     resp <- req |>
       httr2::req_method("MKCOL") |>
-      httr2::req_url_path_append(utils::URLencode(directory)) |>
+      httr2::req_url_path_append((directory)) |>
       httr2::req_error(is_error = \(x) FALSE) |>
       httr2::req_perform()
     if (httr2::resp_is_error(resp)) {
@@ -225,8 +228,7 @@ wd_mkdir <- function(req, directory) {
     } else {
       invisible(TRUE)
     }
-  }
-  else {
+  } else {
     invisible(TRUE)
   }
 
@@ -264,7 +266,7 @@ wd_mkdir <- function(req, directory) {
 wd_dir <- function(req, directory = "", full_names = FALSE, as_df = FALSE) {
 
   resp <- req |>
-    httr2::req_url_path_append(utils::URLencode(directory)) |>
+    httr2::req_url_path_append((directory)) |>
     httr2::req_method("PROPFIND") |>
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_headers(
@@ -288,9 +290,7 @@ wd_dir <- function(req, directory = "", full_names = FALSE, as_df = FALSE) {
       }
     )
     dpath <- httr2::url_parse(req$url)$path
-    if(is.null(dpath)) {
-      dpath <- "/"
-    }
+    dpath <- ifelse(is.null(dpath), "/", dpath)
     path <- substring(utils::URLdecode(href), nchar(dpath) + 1)
 
 
@@ -369,7 +369,7 @@ wd_dir <- function(req, directory = "", full_names = FALSE, as_df = FALSE) {
 wd_isdir <- function(req, directory, silent = FALSE) {
 
   resp <- req |>
-    httr2::req_url_path_append(utils::URLencode(directory)) |>
+    httr2::req_url_path_append((directory)) |>
     httr2::req_method("PROPFIND") |>
     httr2::req_headers(
       Depth = "0",
@@ -428,7 +428,9 @@ wd_upload <- function(req, source, target = "") {
   if (target == "") {
     target <- basename(source)
   }
-  if (file.exists(source) && !dir.exists(source) && wd_isdir(req, target, silent = TRUE)) {
+  if (file.exists(source) &&
+        !dir.exists(source) &&
+        wd_isdir(req, target, silent = TRUE)) {
     target <- paste0(target, "/", basename(source))
   }
   if (dir.exists(source)) {
@@ -442,7 +444,7 @@ wd_upload <- function(req, source, target = "") {
   } else {
     resp <- req |>
       httr2::req_method("PUT") |>
-      httr2::req_url_path_append(utils::URLencode(target)) |>
+      httr2::req_url_path_append((target)) |>
       httr2::req_body_file(source) |>
       httr2::req_error(is_error = \(x) FALSE) |>
       httr2::req_perform()
@@ -499,7 +501,7 @@ wd_download <-  function(req, source, target = "") {
   } else {
     resp <- req |>
       httr2::req_method("GET") |>
-      httr2::req_url_path_append(utils::URLencode(source)) |>
+      httr2::req_url_path_append((source)) |>
       httr2::req_error(is_error = \(x) FALSE) |>
       httr2::req_perform(target)
     if (httr2::resp_is_error(resp)) {

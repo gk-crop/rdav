@@ -15,8 +15,7 @@ mock_mkdir <- function(req) {
     </d:propstat>
   </d:response>
 </d:multistatus>'))
-    }
-    else {
+    } else {
       httr2::response(status_code = 207,
                       headers = list("Content-Type" = "application/xml"),
                       body = charToRaw('<?xml version="1.0"?>
@@ -34,8 +33,7 @@ mock_mkdir <- function(req) {
 
     }
 
-  }
-  else if (req$method != "MKCOL") {
+  } else if (req$method != "MKCOL") {
     httr2::response(body = 405)
   } else {
     if (req$url == "https://cloud.example.com/new") {
