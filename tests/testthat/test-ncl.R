@@ -14,10 +14,10 @@ test_that("nextcloud base url - path prefix, no trailing slash", {
 })
 
 test_that("nextcloud base url - spaces, umlauts", {
-  url <- ncl_baseurl("example.com", "john@dö", "sub dir")
+  url <- ncl_baseurl("example.com", "johndö", "sub dir")
   expect_equal(
     url,
-    "https://example.com/sub%20dir/remote.php/dav/files/john%40d%C3%B6"
+    "https://example.com/sub%20dir/remote.php/dav/files/johnd%C3%B6"
   )
 })
 

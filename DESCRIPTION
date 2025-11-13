@@ -1,7 +1,7 @@
 Package: rdav
 Type: Package
 Title: Simple 'WebDAV' Client
-Version: 0.2.1
+Version: 0.2.2
 Date: 2025-11-13
 Authors@R: person(given = "Gunther",
                     family = "Krauss",
