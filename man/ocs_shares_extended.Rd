@@ -38,7 +38,8 @@ ocs_shares(
 
 \item{as_df}{if TRUE (default) a data.frame is returned, else a list of IDs}
 
-\item{columns}{column names that should be included into the result (default \code{NULL} includes all)}
+\item{columns}{column names that should be included into the result
+(default \code{NULL} includes all)}
 
 \item{subfiles}{list shares of subfolders}
 
@@ -48,8 +49,9 @@ ocs_shares(
 data.frame or named vector of IDs
 }
 \description{
-\code{ocs_shares_extended} returns extended information for shares. \code{ocs_shares}
-returns the shares of a file or folder, \code{ocs_child_shares} the shares of the files
+\code{ocs_shares_extended} returns extended information for shares.
+\code{ocs_shares} returns the shares of a file or folder,
+\code{ocs_child_shares} the shares of the files
 and subfolders of the given path.
 }
 \examples{

@@ -18,11 +18,13 @@ Provides functions to interchange files with WebDAV servers
 
 Notice: when uploading or downloading files, they are overwritten without any
 warnings.
+
+Provides additional functions for Nextcloud servers for managing shares.
 }
 \examples{
 \dontrun{
 # establish a connection, you will be asked for a password
-r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
+r <- wd_connect("https://example.com/remote.php/dav/files/user","user")
 
 # show files / directoriess in main directory
 wd_dir(r)

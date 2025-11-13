@@ -11,7 +11,8 @@ ocs_share_info(req, id, columns = NULL)
 
 \item{id}{share id}
 
-\item{columns}{column names that should be included into the result (default \code{NULL} includes all)}
+\item{columns}{column names that should be included into the result
+(default \code{NULL} includes all)}
 }
 \value{
 one row data.frame with share properties

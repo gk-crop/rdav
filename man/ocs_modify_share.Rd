@@ -24,7 +24,8 @@ ocs_modify_share(
 
 \item{password}{optional password for link and e-mail shares}
 
-\item{permissions}{integer (1:read, 2:modify, 4:, 8:, 16:share)}
+\item{permissions}{integer or char vector
+(1:read, 2:update, 4:create, 8:delete, 16:share), default is 1:read}
 
 \item{public_upload}{TRUE if public upload should be enabled}
 
@@ -44,6 +45,11 @@ data.frame with the share properties
 \description{
 If a parameter omitted or is \code{NULL}, then the coresponding property is not
 modified.
+}
+\details{
+Share permissions can be given as vector of integers or characters,
+e.g. \code{c(1, 2, 8)} or \code{c("read", "update", "delete")}, or as their sum or
+concatenation, e.g. \code{11} or \code{"read,update,delete"}.
 }
 \examples{
 \dontrun{

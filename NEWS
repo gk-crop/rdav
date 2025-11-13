@@ -1,3 +1,10 @@
+Version 0.2.1
+* small fix in create share
+* handle path_prefix without trailing slash
+* added tests for full coverage
+* added function to search for users (sharees)
+* permissions can be used now in human readable format
+
 Version 0.2.0
 * fix path escaping due to a change in httr2 package
 * depends now on httr2 >= 1.2.0

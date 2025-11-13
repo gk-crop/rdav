@@ -135,6 +135,9 @@ parse_share_xml <- function(resp,
       for (n in cols) {
         data[[n]] <-
           sapply(sr, \(x) xml2::xml_find_first(x, n) |> xml2::xml_text())
+        if (n == "permissions") {
+          data[["permissions_chr"]] <- permissions_to_chr(data[[n]])
+        }
       }
       data
     } else {
@@ -147,18 +150,103 @@ parse_share_xml <- function(resp,
   }
 }
 
+#' Parses XML returnd by the sharee API to dataframe
+#'
+#' @param resp response from an API request
+#' @param as_df if TRUE (default) a data.frame is returned, else a list of IDs
+#' @param tag XML-Tag for entries as XSLT path
+#'
+#' @returns data.frame or named list of IDs
+#' @noRd
+#'
+parse_user_xml <- function(resp, as_df = TRUE, tag = "//data/element") {
+  sr <- xml2::xml_find_all(xml2::as_xml_document(httr2::resp_body_xml(resp)),
+                           tag)
+  if (length(sr) > 0) {
+    cols <- xml2::xml_name(xml2::xml_children(sr[[1]]))
+    if (as_df) {
+      data <- data.frame(
+        uuid = sapply(
+          sr,
+          function(x) xml2::xml_text(xml2::xml_find_first(x,  "uuid"))
+        )
+      )
+      for (n in cols) {
+        if (n == "value") {
+          vs <- xml2::xml_find_all(sr, "value")
+          vcols <- xml2::xml_name(xml2::xml_children(vs))
+          for (vn in vcols) {
+            data[[vn]] <- xml2::xml_text(xml2::xml_find_first(vs,  vn))
+          }
+        } else {
+          data[[n]] <- sapply(
+            sr, function(x) xml2::xml_text(xml2::xml_find_first(x,  n))
+          )
+        }
+      }
+      data
+    } else {
+      id <- sapply(
+        sr,
+        function(x) xml2::xml_text(xml2::xml_find_first(x, "value/shareWith"))
+      )
+      name <- sapply(
+        sr,
+        function(x) xml2::xml_text(xml2::xml_find_first(x, "name"))
+      )
+      names(id) <- name
+      id
+    }
+  }
+}
+
+#' Packs integer or character vector of integers to a share permission
+#'
+#' @param permissions vector of integers or characters ("read", "update",
+#' "create", "delete", "share")
+#' @returns integer between 1 and 31, representing share permissions
+#' @noRd
+#'
+permissions_to_int <- function(permissions) {
+  pid <- c(r = 1, u = 2, c = 4, d = 8, s = 16, w = 2)
+  if (is.numeric(permissions)) {
+    min(max(0, sum(unique(permissions))), 31)
+  } else if (is.character(permissions)) {
+    cid <- substr(trimws(unlist(strsplit(permissions, ","))), 1, 1)
+    sum(unique(pid[cid]))
+  } else {
+    1
+  }
+}
+
+#' Converts share permission number to readable format
+#'
+#' @param permissions integer representing the share permissions
+#'
+#' @returns character vector containing permissions ("read", "update",
+#' "create", "delete", "share")
+#' @noRd
+#'
+permissions_to_chr <- function(permissions) {
+  pc <- c("read", "update", "create", "delete", "share")
+  sapply(permissions,
+         \(p) paste0(pc[as.logical(intToBits(p))], collapse = ","))
+}
+
 
 #' Returns information for shares
 #'
-#' \code{ocs_shares_extended} returns extended information for shares. \code{ocs_shares}
-#' returns the shares of a file or folder, \code{ocs_child_shares} the shares of the files 
+#' \code{ocs_shares_extended} returns extended information for shares.
+#' \code{ocs_shares} returns the shares of a file or folder,
+#' \code{ocs_child_shares} the shares of the files
 #' and subfolders of the given path.
 #'
 #' @param req WebDAV request as returned by \code{\link{wd_connect}}
 #' @param path folder or file path
 #' @param as_df if TRUE (default) a data.frame is returned, else a list of IDs
-#' @param columns column names that should be included into the result (default `NULL` includes all)
-#' 
+#' @param columns column names that should be included into the result
+#' (default `NULL` includes all)
+#'
 #' @param subfiles list shares of subfolders
 #' @param reshares include shares from others
 #'
@@ -206,7 +294,7 @@ ocs_shares_extended <- function(req, path = "",
 
 #' @rdname ocs_shares_extended
 #' @export
-#' 
+#'
 ocs_child_shares <- function(req, path = "", as_df = TRUE,
                              columns = c("share_type", "item_type",
                                          "permissions",
@@ -218,7 +306,7 @@ ocs_child_shares <- function(req, path = "", as_df = TRUE,
 
 #' @rdname ocs_shares_extended
 #' @export
-#' 
+#'
 ocs_shares <- function(req, path = "/", as_df = TRUE,
                        columns = c("share_type", "item_type", "permissions",
                                    "label", "uid_owner",
@@ -228,7 +316,7 @@ ocs_shares <- function(req, path = "/", as_df = TRUE,
 }
 
 #' Get infor for a specific share
-#' 
+#'
 #' @inheritParams ocs_shares_extended
 #' @param id share id
 #' @returns one row data.frame with share properties
@@ -264,7 +352,7 @@ ocs_share_info <- function(req, id, columns = NULL) {
 #' r <- wd_connect("https://example.com/remote.php/dav/files/johndoe")
 #' ocs_delete_share(r, 12342)
 #' }
-#' 
+#'
 
 ocs_delete_share <- function(req, id) {
   resp <- ocs_request(req, api = "share") |>
@@ -283,14 +371,14 @@ ocs_delete_share <- function(req, id) {
 }
 
 #' Notifies the user of a mail share
-#' 
+#'
 #' @inheritParams ocs_share_info
 #' @param password password of the share if it is password protected
 #' @returns invisible TRUE on success or FALSE on failure
 #' @examples
 #' \dontrun{
 #' r <- wd_connect("https://example.com/remote.php/dav/files/johndoe")
-#' 
+#'
 #' # add a password to a mail share and notify the user
 #' ocs_modify_share(r, 12342, password = "super_secret")
 #' ocs_send_mail(r, 12342, password = "super_secret")
@@ -316,32 +404,37 @@ ocs_send_mail <- function(req, id, password = NULL) {
 
 
 #' Creates a share
-#' 
+#'
 #' Creates different share types:
-#' 
+#'
 #' - `ocs_create_share` - generic method that takes share type as argument
 #' - `ocs_create_share_user` - creates a share for a nextcloud user
 #' - `ocs_create_share_group` - creates a share for a nextcloud group
 #' - `ocs_create_share_link` - create a public share link
 #' - `ocs_create_share_mail` - creates an e-mail share
 #' - `ocs_create_share_federated` - creates a federated share
-#' 
+#'
 #' Notice: if protecting a public link or e-mail share with a password, make
 #' sure that the password meets the services' password policy.
+#'
+#' Share permissions can be given as vector of integers or characters,
+#' e.g. `c(1, 2, 8)` or `c("read", "update", "delete")`, or as their sum or
+#' concatenation, e.g. `11` or `"read,update,delete"`.
 #'
 #' @inheritParams ocs_shares_extended
 #' @param share_type integer 0:user, 1:group, 3:link, 4:e-mail, 6:federated
 #' @param share_with depending on share type: user id, group id,
 #' e-mail address or federated cloud id (only for `ocs_create_share`)
 #' @param password optional password for link and e-mail shares
-#' @param permissions integer (1:read, 2:modify, 4:, 8:, 16:share)
+#' @param permissions integer or char vector
+#' (1:read, 2:update, 4:create, 8:delete, 16:share), default is 1:read
 #' @param public_upload TRUE if public upload should be enabled
 #' @param expire_date expiration date as string in the format YYYY-MM-DD
 #' @param label label for the share
 #' @param note note for the share
 #' @param send_mail if TRUE the user is notified via e-mail
 #' @param attributes optional attributes
-#' 
+#'
 #' @returns information for the newly created share as data.frame
 #' @md
 #' @export
@@ -351,10 +444,10 @@ ocs_send_mail <- function(req, id, password = NULL) {
 #' ocs_create_share(r, "myfolder/share", 4)
 #' ocs_create_share_link(r, "myfolder/share")
 #' ocs_create_share_mail(r, "myfolder/share", "jack@example.com")
-#' ocs_create_share_user(r, "myfolder/share", "jackdoe")
-#' 
+#' ocs_create_share_user(r, "myfolder/share", "jackdoe", c("read", "update"))
+#'
 #' }
-#' 
+#'
 ocs_create_share <- function(req, path, share_type,
                              share_with = NULL,
                              password = NULL,
@@ -366,7 +459,7 @@ ocs_create_share <- function(req, path, share_type,
                              send_mail = FALSE,
                              attributes = NULL) {
 
-  if (share_type < 2 && is.null(share_with) && share_with == "") {
+  if (share_type < 2 && (is.null(share_with) || share_with == "")) {
     stop("For user or group shares the parameter 'shareWith' is required")
   }
 
@@ -391,7 +484,8 @@ ocs_create_share <- function(req, path, share_type,
     httr2::req_error(is_error = \(x) FALSE) |>
     httr2::req_url_path_append("/shares")  |>
     httr2::req_body_form(path = path, shareType = share_type,
-                         shareWith = sw, permissions = permissions,
+                         shareWith = sw,
+                         permissions = permissions_to_int(permissions),
                          publicUpload = pu, expireDate = ed, label = label,
                          note = note, sendMail = sm)
 
@@ -474,14 +568,15 @@ ocs_create_share_group <- function(req, path, group, permissions = 1,
                    send_mail = send_mail)
 }
 
- 
+
 #' @rdname ocs_create_share
 #' @param cloud_id cloud id (only for \code{ocs_create_share_federated})
 #' @export
 ocs_create_share_federated <- function(req, path, cloud_id,
-                                   permissions = 1, public_upload = FALSE,
-                                   expire_date = NULL,
-                                   note = "", label = "", send_mail = TRUE) {
+                                       permissions = 1, public_upload = FALSE,
+                                       expire_date = NULL,
+                                       note = "", label = "",
+                                       send_mail = TRUE) {
   ocs_create_share(req, path, 6, share_with = cloud_id, password = NULL,
                    permissions = permissions,
                    public_upload = public_upload, expire_date = expire_date,
@@ -491,10 +586,14 @@ ocs_create_share_federated <- function(req, path, cloud_id,
 
 
 #' Modifies properties of a share
-#' 
+#'
 #' If a parameter omitted or is `NULL`, then the coresponding property is not
 #' modified.
-#' 
+#'
+#' Share permissions can be given as vector of integers or characters,
+#' e.g. `c(1, 2, 8)` or `c("read", "update", "delete")`, or as their sum or
+#' concatenation, e.g. `11` or `"read,update,delete"`.
+#'
 #' @inheritParams ocs_create_share
 #' @param id share id
 #' @returns data.frame with the share properties
@@ -505,7 +604,7 @@ ocs_create_share_federated <- function(req, path, cloud_id,
 #' r <- wd_connect("https://example.com/remote.php/dav/files/johndoe")
 #' ocs_modify_share(r, 12345, permissions = 31, expire_date = "2025-11-01")
 #' }
-#' 
+#'
 ocs_modify_share <- function(req, id,
                              password = NULL,
                              permissions = NULL,
@@ -548,7 +647,7 @@ ocs_modify_share <- function(req, id,
 
   if (!is.null(permissions)) {
     resp <- r |>
-      httr2::req_body_form(permissions = permissions) |>
+      httr2::req_body_form(permissions = permissions_to_int(permissions)) |>
       httr2::req_perform()
 
     if (httr2::resp_is_error(resp)) {
@@ -616,4 +715,30 @@ ocs_modify_share <- function(req, id,
   }
 
   ocs_share_info(req, id, NULL)
+}
+
+
+#' Search for users one could share data
+#'
+#' @param req WebDAV request as returned by \code{\link{wd_connect}}
+#' @param search search string (e.g. user name, e-mail, group name)
+#' @param lookup if TRUE (and supported) search on Nextcloud lookup server
+#' @param as_df if TRUE (default) a data.frame is returned, else a list of IDs
+#'
+#' @returns data.frame with user informations or named vector of user ids.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' r <- wd_connect("https://example.com/remote.php/dav/files/johndoe")
+#' ocs_find_users(r, "Doe, Jack")
+#' }
+ocs_find_users <- function(req, search, lookup = FALSE, as_df = TRUE) {
+  lu <- ifelse(lookup, "true", "false")
+  ocs_request(req, "sharee") |>
+    httr2::req_method("GET") |>
+    httr2::req_url_path_append("sharees") |>
+    httr2::req_url_query(search = search, itemType = "file", lookup = lu) |>
+    httr2::req_perform() |>
+    parse_user_xml(tag = "//data//element", as_df = as_df)
 }

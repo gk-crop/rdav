@@ -1,21 +1,3 @@
-mock_copy <- function(req) {
-  if (req$method != "COPY") {
-    httr2::response(body = 405)
-  } else {
-    if (req$url == "https://cloud.example.com/file.txt") {
-      if (req$headers$Destination == "https://cloud.example.com/newfile.txt") {
-        httr2::response(status_code = 200)
-      } else if (req$headers$Overwrite == "F") {
-        httr2::response(status_code = 409)
-      } else {
-        httr2::response(status_code = 200)
-      }
-    } else {
-      httr2::response(status_code = 404)
-    }
-  }
-}
-
 test_that("copy works", {
   r <- httr2::request("https://cloud.example.com/")
   expect_equal(

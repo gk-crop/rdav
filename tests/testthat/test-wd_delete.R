@@ -1,16 +1,3 @@
-mock_delete <- function(req) {
-  if (req$method != "DELETE") {
-    httr2::response(body = 405)
-  } else {
-    if (req$url != "https://cloud.example.com/deleteme") {
-      httr2::response(status_code = 404)
-    } else {
-      httr2::response(status_code = 200)
-    }
-  }
-}
-
-
 test_that("delete works", {
   r <- httr2::request("https://cloud.example.com")
   expect_equal(

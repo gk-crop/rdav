@@ -27,11 +27,12 @@ knitr::opts_chunk$set(
 library(rdav)
 ```
 
-"rdav" is a simple WebDAV client to upload and download data from cloud services.
+"rdav" is a simple *WebDAV* client to upload and download data from cloud
+services.
 
 # A first example
 
-- Load Data from a WebDAV server,
+- Load Data from a *WebDAV* server,
 - read the downloaded file, 
 - create a plot from the data,
 - save the plot as image and
@@ -40,7 +41,7 @@ library(rdav)
 ```{r eval=FALSE}
 library(rdav)
 
-r <- wd_connect("https://cloud.example.com/remote.php/webdav/", "myusername")
+r <- wd_connect("https://example.com/remote.php/dav/files/myname/", "myname")
 
 wd_download(r, "data/data.csv", "localdata/data.csv")
 data <- read.table("localdata/data.csv")
@@ -53,51 +54,78 @@ wd_upload(r, "data_plot.png", "data_plot.png")
 
 ```
 
+On servers that are based on *Nextcloud*, you can also share the files
+
+```{r eval=FALSE}
+
+ocs_create_share_mail(r, "data_plot.png", "yourname@example.com",
+                      note = "Please check the plotted data.")
+```
+
+
 
 # WebDAV, OwnCloud, NextCloud
 
-The WebDAV protocol provides a framework to create, change and move documents on a server. 
-Many cloud based storage systems provide WebDAV access, e.g. systems based on OwnCloud or NextCloud. This includes many cloud services offered by universities, organisations companies as well as many self hosted clouds on NAS or Raspberry Pi.
+The [*WebDAV*](https://www.rfc-editor.org/rfc/rfc4918) protocol provides a
+framework to create, change and move documents on a server. 
+Many cloud based storage systems provide *WebDAV* access, e.g. systems based on
+*OwnCloud* or [*Nextcloud*](https://nextcloud.com/). 
+This includes many cloud services offered by
+universities, organisations companies as well as many self hosted clouds on NAS
+or Raspberry Pi.
 
-To access WebDAV one typically needs the URL to the WebDAV server, an username and a password. There is also the possibility to share data via public links without password protection.
+To access *WebDAV* one typically needs the URL to the WebDAV server, an username
+and a password. There is also the possibility to share data via public links
+with or without password protection.
 
-Accounts on an OwnCloud or Nextcloud based server are typically addressed by WebDAV via the URL: 
-`https://cloud.example.com/remote.php/webdav/`.
+Accounts on an *OwnCloud* or *Nextcloud* based server are typically addressed by
+WebDAV via the URL: 
+`https://example.com/remote.php/dav/files/username/`.
 
-When sharing data via a public link from those servers, the link is typically of the form  
-`https://cloud.example.com/s/yxcFKRWBJqYYzp4/`  
+When sharing data via a public link from those servers, the link is typically
+of the form  
+`https://example.com/s/yxcFKRWBJqYYzp4/`  
 and will be used to access the files via a web browser.
-To access a public share via WebDAV, one has to use the URL:  
-`https://cloud.example.com/public.php/webdav/`  
-As username one has to use the share token, i. e. the cryptic number and letter string of the share link following `/s/` - in the example above the username would be `yxcFKRWBJqYYzp4`.
+To access a public share via *WebDAV*, one has to use the URL:  
+`https://example.com/public.php/dav/files/username/`  
+As username one has to use the share token, i. e. the cryptic number and letter
+string of the share link following `/s/` - in the example above the username
+would be `yxcFKRWBJqYYzp4`.
 
+The package provides functions
 
+* to manage files on a *WebDAV* server (function names starting with `wd_`)
+* handle *Nextcloud* specific URLs (function names starting with `ncl_`)
+* manage shares on *Nextcloud* folder (via 
+[OCS API](https://docs.nextcloud.com/server/stable/developer_manual/client_apis/OCS/ocs-api-overview.html))
+, function names starting with `ocs_`)
 
 # Using the package functions
 
 
 ## Establishing the connection
 
-To interact with the WebDAV server, you have to create a connection via `wd_connect` by supplying the URL, username and password. 
+To interact with the *WebDAV* server, you have to create a connection via
+`wd_connect` by supplying the URL, username and password. 
 
-In an interactive R session, you may omit the password when calling `wd_connect`. Then R will ask you to type the password.
+In an interactive R session, you may omit the password when calling
+`wd_connect`. Then R will ask you to type the password.
 
 ```{r eval=FALSE}
 # no password given, R will ask.
-r <- wd_connect(url = "https://cloud.example.com/remote.php/webdav/",
-                username = "myusername")
+r <- wd_connect(url = "https://cloud.example.com/remote.php/dav/files/myname",
+                username = "myname")
 ```
 
 
-
-When using WebDAV in a script, you have to pass the password to `wd_connect`. 
+When using *WebDAV* in a script, you have to pass the password to `wd_connect`. 
 It is not good practice, to write the password literally in your script 
 
 ```{r eval=FALSE}
 # Don"t do this! You would reveal your super secret password to others when
 # sharing your script.
-r <- wd_connect(url = "https://cloud.example.com/remote.php/webdav/",
-                username = "myusername",
+r <- wd_connect(url = "https://cloud.example.com/remote.php/dav/files/myname/",
+                username = "myname",
                 password = "12345")
 ```
 
@@ -118,8 +146,8 @@ In your scripts you can then use `keyring::get_key("mycloud","myusername")` to
 pass the stored password to `wd_connect`:
 
 ```{r, eval=FALSE}
-r <- wd_connect(url = "https://cloud.example.com/remote.php/webdav/",
-                username = "myusername",
+r <- wd_connect(url = "https://cloud.example.com/remote.php/dav/files/myname",
+                username = "myname",
                 password = keyring::get_key("mycloud", "myusername"))
 ```
 
@@ -163,18 +191,19 @@ Notice:
 
 - If you upload / download files into a directory, the target directory has 
 to exist already. 
-- If you upload / download a directory, then the target directory will be created,
-if it does not exist. However, the parent directory have to exist already
+- If you upload / download a directory, then the target directory will be
+created, if it does not exist. However, the parent directory have to exist
+already.
 
 ## Copy, move, delete files on the server
 
 You can copy, move, delete files or directory on the server and create new 
 directories. 
 
-By default existing files will be overwritten when using copy and move operation,
-unless you specify the parameter `overwrite=FALSE`. Notice: Some WebDAV servers 
-may behave differently and won't overwrite files. In these case you have to delete
-files first.
+By default existing files will be overwritten when using copy and move
+operation, unless you specify the parameter `overwrite=FALSE`.
+Notice: Some WebDAV servers may behave differently and won't overwrite files.
+In these case you have to delete files first.
 
 ```{r, eval=FALSE}
 wd_copy(r, "actual.csv", "backup.csv")
@@ -187,7 +216,8 @@ You can create new directories.
 ```{r, eval=FALSE}
 wd_mkdir(r, "data/soil/new")
 ```
-Notice that parent directories have to exist. If not, you have to create them first
+Notice that parent directories have to exist. If not, you have to create them
+first
 
 ```{r, eval=FALSE}
 wd_mkdir(r, "data/soil")
@@ -196,11 +226,14 @@ wd_mkdir(r, "data/soil/new")
 
 ## Get informations about files and directories
 
-You can get the list of files and subfolders as a character vector by using `wd_dir`.
-Using the parameter `full_names = TRUE` will give you the files with relative paths.
+You can get the list of files and subfolders as a character vector by using
+`wd_dir`.
+Using the parameter `full_names = TRUE` will give you the files with relative
+paths.
 
-To get more information about files, you can use the option `as_df = TRUE`. You will then
-get a data.frame with additional columns like size, last modification date and contenttype.
+To get more information about files, you can use the option `as_df = TRUE`.
+You will then get a data.frame with additional columns like size,
+last modification date and contenttype.
 
 ```{r, eval=FALSE}
 
@@ -215,17 +248,22 @@ wd_dir(r, "example", as_df = TRUE)
 
 ## Handling base and share URLs 
 
-Base WebDAV entry point URLs for Nextcloud based servers are of the 
-form `<hostname>/<optional_subfolder>/remote.php/dav/files/<username>`. 
-Public share URLs of are of the form `<hostname>/<optional_subfolder>/s/<token>`
-where the token is used as username for authentication. The WebDAV entry point
-for public shares is of the form `<hostname>/<optional_subfolder>/public.php/dav/files/<username>`.
+Base *WebDAV* entry point URLs for Nextcloud based servers are of the 
+form
+`<hostname>/<optional_subfolder>/remote.php/dav/files/<username>`. 
+Public share URLs of are of the form
+`<hostname>/<optional_subfolder>/s/<token>`
+where the token is used as username for authentication. The *WebDAV* entry point
+for public shares is of the form
+`<hostname>/<optional_subfolder>/public.php/dav/files/<username>`.
 The package provides some functions to deal with these URLs:
 
 
 * `ncl_baseurl(hostname, username)` creates the base url from host and user name.
-* `ncl_shareurl(hostname, username)` creates the base url for public shares from host and username (token).
-* `ncl_shareurl_from_publicurl(url)` creates the base url for public shares from the public share url.
+* `ncl_shareurl(hostname, username)` creates the base url for public shares from
+host and username (token).
+* `ncl_shareurl_from_publicurl(url)` creates the base url for public shares from
+the public share url.
 * `ncl_username_from_from_url` extracts the username  from the base urls.
 
 This simplifies the connection to Nextcloud based servers:
@@ -242,7 +280,8 @@ rs <- wd_connect(shareurl)
 
 ## Managing shares
 
-On Nextcloud based servers one can manage shares via the [OCS API](https://docs.nextcloud.com/server/stable/developer_manual/client_apis/OCS/ocs-api-overview.html).
+On *Nextcloud* based servers one can manage shares via the
+*OCS API*.
 
 The package provides functions for
 
@@ -270,6 +309,17 @@ ocs_delete_share(r, sh$id)
 ```
 
 
+## Find users you want to share with
+
+You can search your *Nextcloud* based server for other users or groups on that
+server as well as remote (e.g. federated shares or e-mail shares that are known
+to your server).
+
+```{r, eval=FALSE}
+r <- wd_connect(url)
+ocs_find_users(r, "Doe, John")
+```
+
 # Security considerations
 
 Here some thougths, how to better protect the data, if there is some risk that
@@ -290,12 +340,12 @@ gets somehow disclosed, you can just delete the application password and
 create a new one. You don't have to change then your account's password.
 
 
-## Use password protected public shares instead direct account
+## Use password protected public shares instead of main account
 
 Instead accessing the full account, you may create a subfolder and share it 
-via a public link, adding a password. You can give the share full read / write and
-edit rights, so you can manage the content of the folder as you were logged in
-with your main account.
+via a public link, adding a password. You can give the share full read / write
+and edit rights, so you can manage the content of the folder as you were logged
+in with your main account.
 
 If someone gets access to your share, only the data in this folder can then be
 manipulated.
@@ -314,14 +364,21 @@ other users
 available to other users
 
 Then you can check the uploaded files and move them to the download folder, or 
-process uploaded files and save results you want to share to the download folder.
+process uploaded files and save results you want to share to the download
+folder.
 
 This will prevent that someone who gained access to the share to distribute
-illegal content. Even if illegal content might then get uploaded, no one else
-can download it.
+unwanted or illegal content. Even if unwanted or illegal content might
+get uploaded, no one else can download it.
 
 # Some tips and tricks
 
-- You can establish more than one connection and use different WebDAV servers simultaneously
-- If you want to work only in a subdirectory, you can append it to the WebDAV URL `https://cloud.example.com/remote.php/webdav/my/sub/directory`. Then you don't have to specify the full path when working with files this directory.
+- You can establish more than one connection and use different WebDAV servers
+simultaneously
+- If you want to work only in a subdirectory, e.g. `/sub/dir`, you can append it to the
+*WebDAV* URL
+`https://cloud.example.com/remote.php/dav/files/myname/sub/dir`.
+Then you don't have to specify the full path when working with files in this
+directory with `wd_*` functions. **Notice**: for managing shares via `ocs_*` functions you still need
+to give the full path to files or folders.
 

@@ -20,10 +20,10 @@ warnings.
 
 To install the stable version from CRAN please use
 ```
-install.packates('rdav')
+install.packages('rdav')
 ```
 
-You can install the most recent development version from r-universe.dev
+You can install the most recent development version from `r-universe.dev`
 
 ```
 install.packages('rdav', 

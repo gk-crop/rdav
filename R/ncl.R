@@ -18,6 +18,22 @@ hostname_to_url <- function(hostname) {
                 paste0("https://", hostname)))
 }
 
+#' Add trailing slash to path
+#'
+#' @param path path (with or without trailing slash)
+#'
+#' @returns path with trailing slash "/"
+#' @noRd
+#' @examples
+#' hostname_to_url("example.com")
+#' hostname_to_url("http://old.example.com")
+#'
+postfix_slash <- function(path) {
+  ifelse(endsWith(path, "/") || path == "",
+         path,
+         paste0(path, "/"))
+}
+
 
 #' Builds the Nextcloud base URL for a nextcloud server from host and user names
 #'
@@ -34,7 +50,7 @@ hostname_to_url <- function(hostname) {
 #'
 ncl_baseurl <- function(hostname, username, path_prefix = "") {
   httr2::url_parse(hostname_to_url(hostname)) |>
-    httr2::url_modify(path = path_prefix) |>
+    httr2::url_modify(path = postfix_slash(path_prefix)) |>
     httr2::url_modify_relative("remote.php/dav/files/") |>
     httr2::url_modify_relative(username) |>
     httr2::url_build()
@@ -56,7 +72,7 @@ ncl_baseurl <- function(hostname, username, path_prefix = "") {
 #'
 ncl_shareurl <- function(hostname, username, path_prefix = "") {
   httr2::url_parse(hostname_to_url(hostname)) |>
-    httr2::url_modify(path = path_prefix) |>
+    httr2::url_modify(path = postfix_slash(path_prefix)) |>
     httr2::url_modify_relative("public.php/dav/files/") |>
     httr2::url_modify_relative(username) |>
     httr2::url_build()
@@ -100,7 +116,7 @@ ncl_username_from_url <- function(url) {
   user <- ""
   spl <- strsplit(surl$path, "/dav/files/", fixed = TRUE)[[1]]
   if (length(spl) > 1) {
-    user <- spl[2]
+    user <- strsplit(spl[2], "/", fixed = TRUE)[[1]][1]
   }
   user
 }

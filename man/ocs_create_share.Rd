@@ -96,7 +96,8 @@ e-mail address or federated cloud id (only for \code{ocs_create_share})}
 
 \item{password}{optional password for link and e-mail shares}
 
-\item{permissions}{integer (1:read, 2:modify, 4:, 8:, 16:share)}
+\item{permissions}{integer or char vector
+(1:read, 2:update, 4:create, 8:delete, 16:share), default is 1:read}
 
 \item{public_upload}{TRUE if public upload should be enabled}
 
@@ -136,6 +137,10 @@ Creates different share types:
 
 Notice: if protecting a public link or e-mail share with a password, make
 sure that the password meets the services' password policy.
+
+Share permissions can be given as vector of integers or characters,
+e.g. \code{c(1, 2, 8)} or \code{c("read", "update", "delete")}, or as their sum or
+concatenation, e.g. \code{11} or \code{"read,update,delete"}.
 }
 \examples{
 \dontrun{
@@ -143,7 +148,7 @@ r <- wd_connect("https://example.com/remote.php/dav/files/johndoe")
 ocs_create_share(r, "myfolder/share", 4)
 ocs_create_share_link(r, "myfolder/share")
 ocs_create_share_mail(r, "myfolder/share", "jack@example.com")
-ocs_create_share_user(r, "myfolder/share", "jackdoe")
+ocs_create_share_user(r, "myfolder/share", "jackdoe", c("read", "update"))
 
 }
 

@@ -10,13 +10,15 @@
 #' Notice: when uploading or downloading files, they are overwritten without any
 #' warnings.
 #'
+#' Provides additional functions for Nextcloud servers for managing shares.
+#' 
 #' @author {Gunther Krauss}
 #'
 #'
 #' @examples
 #' \dontrun{
 #' # establish a connection, you will be asked for a password
-#' r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
+#' r <- wd_connect("https://example.com/remote.php/dav/files/user","user")
 #'
 #' # show files / directoriess in main directory
 #' wd_dir(r)
@@ -67,20 +69,20 @@ ns <- c(
 #' \dontrun{
 #' # establish a connection, you will be asked for a password
 #'
-#' r <- wd_connect("https://example.com/remote.php/webdav/","exampleuser")
+#' r <- wd_connect("https://example.com/remote.php/dav/files/myname","myname")
 #'
 #'
 #' # establish a connection, use keyring package to retrieve the password
 #'
-#' keyring::key_set("mydav", "exampleuser") # call only once
+#' keyring::key_set("dav", "myname") # call only once
 #'
-#' r <- wd_connect("https://example.com/remote.php/webdav/",
-#'                 "exampleuser",
-#'                 keyring::key_get("mydav", "exampleuser"))
+#' r <- wd_connect("https://example.com/remote.php/dav/files/myname",
+#'                 "myname",
+#'                 keyring::key_get("dav", "myname"))
 #' }
 
 
-wd_connect <- function(url, 
+wd_connect <- function(url,
                        username = ncl_username_from_url(url), password = NULL) {
   req <- httr2::request(url) |>
     httr2::req_auth_basic(username, password)
